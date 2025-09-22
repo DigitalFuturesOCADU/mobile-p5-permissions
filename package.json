@@ -1,0 +1,69 @@
+{
+  "name": "mobile-p5-permissions",
+  "version": "1.0.0",
+  "description": "Easy-to-use permission handling and gesture blocking for mobile p5.js projects",
+  "main": "src/permissionsAll.js",
+  "files": [
+    "src/",
+    "examples/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "echo \"No tests specified\" && exit 0",
+    "prepublishOnly": "npm test",
+    "prepare": "echo \"Package prepared for publishing\"",
+    "version": "echo \"Version bumped to $npm_package_version\"",
+    "postversion": "git push && git push --tags",
+    "release:patch": "npm version patch",
+    "release:minor": "npm version minor", 
+    "release:major": "npm version major",
+    "release:dry": "npm version --dry-run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DigitalFuturesOCADU/mobile-p5-permissions.git"
+  },
+  "keywords": [
+    "p5js",
+    "mobile",
+    "permissions",
+    "touch",
+    "gyroscope",
+    "accelerometer",
+    "microphone",
+    "gesture-blocking",
+    "mobile-web",
+    "creative-coding",
+    "javascript",
+    "ios",
+    "android",
+    "deviceorientation",
+    "devicemotion",
+    "web-audio"
+  ],
+  "author": "Digital Futures OCADU",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DigitalFuturesOCADU/mobile-p5-permissions/issues"
+  },
+  "homepage": "https://github.com/DigitalFuturesOCADU/mobile-p5-permissions#readme",
+  "peerDependencies": {
+    "p5": "^1.0.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "browserslist": [
+    "iOS >= 13",
+    "Android >= 7",
+    "Chrome >= 80",
+    "Safari >= 13",
+    "Firefox >= 75"
+  ]
+}
