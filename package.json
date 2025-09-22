@@ -1,6 +1,6 @@
 {
   "name": "mobile-p5-permissions",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Easy-to-use permission handling and gesture blocking for mobile p5.js projects",
   "main": "src/permissionsAll.js",
   "files": [
@@ -16,7 +16,7 @@
     "version": "echo \"Version bumped to $npm_package_version\"",
     "postversion": "git push && git push --tags",
     "release:patch": "npm version patch",
-    "release:minor": "npm version minor", 
+    "release:minor": "npm version minor",
     "release:major": "npm version major",
     "release:dry": "npm version --dry-run"
   },
