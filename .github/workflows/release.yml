@@ -15,10 +15,9 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18.x'
-        cache: 'npm'
     
     - name: Install dependencies
-      run: npm ci || npm install
+      run: npm install --only=dev 2>/dev/null || echo "No dependencies to install"
     
     - name: Run tests
       run: npm test
@@ -40,12 +39,12 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Create Release
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        tag_name: ${{ github.ref_name }}
+        name: Release ${{ github.ref_name }}
         body: |
           Changes in this Release
           - See CHANGELOG.md for details
@@ -83,7 +82,7 @@ jobs:
         registry-url: 'https://registry.npmjs.org'
     
     - name: Install dependencies
-      run: npm ci || npm install
+      run: npm install --only=dev 2>/dev/null || echo "No dependencies to install"
     
     - name: Publish to npm
       run: npm publish
