@@ -1,45 +1,88 @@
 // ============================================= 
-// PERMISSIONS AND GESTURE HANDLING SCRIPT
-// Students don't need to modify this
+// MOBILE P5.JS PERMISSIONS - REFACTORED
+// Clean API for enabling permissions in p5.js sketches
 // =============================================
 
-// Global flag for sketch.js to check
+// Global state flags
 window.sensorsEnabled = false;
 window.micEnabled = false;
+window.gesturesLocked = false;
 
-// Store references
-let startButton;
-let statusText;
-
-// =========================================
-// INITIALIZATION
-// =========================================
-document.addEventListener('DOMContentLoaded', function() {
-  startButton = document.getElementById('startButton');
-  statusText = document.getElementById('statusText');
-  
-  // Add click event listener to start button
-  startButton.addEventListener('click', handlePermissionRequest);
-  
-  // Initialize other event listeners
-  initializeGestureBlocking();
-  initializeP5TouchOverrides();
-});
+// Internal state
+let _permissionsInitialized = false;
+let _micInstance = null;
 
 // =========================================
-// PERMISSION HANDLING
+// PUBLIC API - CALL THESE FROM YOUR P5 SKETCH
 // =========================================
-async function handlePermissionRequest() {
-  startButton.classList.add('hidden');
-  statusText.classList.remove('hidden');
-  statusText.textContent = 'Requesting permissions...';
+
+/**
+ * Lock mobile gestures to prevent browser interference
+ * Call this in your setup() function
+ */
+function lockGestures() {
+  if (window.gesturesLocked) return;
   
+  console.log('🔒 Locking mobile gestures...');
+  _initializeGestureBlocking();
+  _initializeP5TouchOverrides();
+  window.gesturesLocked = true;
+  console.log('✅ Mobile gestures locked');
+}
+
+/**
+ * Enable gyroscope with a button interface
+ * Creates a start button that user must click
+ */
+function enableGyroButton(buttonText = 'ENABLE MOTION SENSORS', statusText = 'Requesting motion sensors...') {
+  _createPermissionButton(buttonText, statusText, async () => {
+    await _requestMotionPermissions();
+    console.log('✅ Gyroscope enabled via button');
+  });
+}
+
+/**
+ * Enable gyroscope with tap-to-start
+ * User taps anywhere on screen to enable
+ */
+function enableGyroTap(message = 'Tap screen to enable motion sensors') {
+  _createTapToEnable(message, async () => {
+    await _requestMotionPermissions();
+    console.log('✅ Gyroscope enabled via tap');
+  });
+}
+
+/**
+ * Enable microphone with a button interface
+ * Creates a start button that user must click
+ */
+function enableMicButton(buttonText = 'ENABLE MICROPHONE', statusText = 'Requesting microphone access...') {
+  _createPermissionButton(buttonText, statusText, async () => {
+    await _requestMicrophonePermissions();
+    console.log('✅ Microphone enabled via button');
+  });
+}
+
+/**
+ * Enable microphone with tap-to-start
+ * User taps anywhere on screen to enable
+ */
+function enableMicTap(message = 'Tap screen to enable microphone') {
+  _createTapToEnable(message, async () => {
+    await _requestMicrophonePermissions();
+    console.log('✅ Microphone enabled via tap');
+  });
+}
+
+// =========================================
+// INTERNAL PERMISSION HANDLERS
+// =========================================
+
+async function _requestMotionPermissions() {
   try {
     // Request motion sensor permissions (iOS 13+)
     if (typeof DeviceOrientationEvent !== 'undefined' &&
         typeof DeviceOrientationEvent.requestPermission === 'function') {
-      
-      statusText.textContent = 'Requesting motion sensors...';
       
       const orientationPermission = await DeviceOrientationEvent.requestPermission();
       console.log('Orientation permission:', orientationPermission);
@@ -51,48 +94,191 @@ async function handlePermissionRequest() {
       }
     }
     
-    // Start audio context
-    statusText.textContent = 'Enabling audio...';
-    
-    // Handle p5.sound
-    if (typeof userStartAudio !== 'undefined') {
-      await userStartAudio();
-      
-      // If there's a global mic object created by sketch.js, start it
-      if (typeof mic !== 'undefined' && mic && mic.start) {
-        mic.start();
-        window.micEnabled = true;
-      }
-    }
-    
-    // Mark sensors as enabled
     window.sensorsEnabled = true;
-    
-    // Hide status text
-    statusText.classList.add('hidden');
-    
-    // Call setup again if it exists (to reinitialize with permissions)
-    if (typeof userSetupComplete === 'function') {
-      userSetupComplete();
-    }
+    _notifySketchReady();
     
   } catch (error) {
-    console.error('Permission error:', error);
-    statusText.textContent = 'Error: ' + error.message;
-    
-    // Still enable what we can
+    console.error('Motion sensor permission error:', error);
+    // Enable anyway for non-iOS devices
     window.sensorsEnabled = true;
-    
-    setTimeout(() => {
-      statusText.classList.add('hidden');
-    }, 3000);
+    _notifySketchReady();
   }
 }
 
+async function _requestMicrophonePermissions() {
+  try {
+    // Start audio context for p5.sound
+    if (typeof userStartAudio !== 'undefined') {
+      await userStartAudio();
+    }
+    
+    // If there's a global mic object, start it
+    if (typeof mic !== 'undefined' && mic && mic.start) {
+      mic.start();
+      _micInstance = mic;
+      window.micEnabled = true;
+    } else {
+      console.warn('No microphone object found. Create one with: mic = new p5.AudioIn();');
+    }
+    
+    _notifySketchReady();
+    
+  } catch (error) {
+    console.error('Microphone permission error:', error);
+    _notifySketchReady();
+  }
+}
+
+function _notifySketchReady() {
+  // Call userSetupComplete if it exists
+  if (typeof userSetupComplete === 'function') {
+    userSetupComplete();
+  }
+  
+  // Trigger a custom event for more advanced use cases
+  window.dispatchEvent(new CustomEvent('permissionsReady', {
+    detail: {
+      sensors: window.sensorsEnabled,
+      microphone: window.micEnabled,
+      gestures: window.gesturesLocked
+    }
+  }));
+}
+
 // =========================================
-// GESTURE PREVENTION INITIALIZATION
+// UI CREATION HELPERS
 // =========================================
-function initializeGestureBlocking() {
+
+function _createPermissionButton(buttonText, statusText, onClickHandler) {
+  // Remove existing button if present
+  _removeExistingUI();
+  
+  // Create button
+  const button = document.createElement('button');
+  button.id = 'permissionButton';
+  button.textContent = buttonText;
+  button.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px 40px;
+    font-size: 18px;
+    font-weight: bold;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    z-index: 10000;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease;
+  `;
+  
+  // Create status text
+  const status = document.createElement('div');
+  status.id = 'permissionStatus';
+  status.textContent = statusText;
+  status.style.cssText = `
+    position: fixed;
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%, 0);
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    text-align: center;
+    z-index: 9999;
+    display: none;
+  `;
+  
+  // Add hover effect
+  button.addEventListener('mouseenter', () => {
+    button.style.transform = 'translate(-50%, -50%) scale(1.05)';
+  });
+  
+  button.addEventListener('mouseleave', () => {
+    button.style.transform = 'translate(-50%, -50%) scale(1)';
+  });
+  
+  // Add click handler
+  button.addEventListener('click', async () => {
+    button.style.display = 'none';
+    status.style.display = 'block';
+    
+    await onClickHandler();
+    
+    status.style.display = 'none';
+    _removeExistingUI();
+  });
+  
+  document.body.appendChild(button);
+  document.body.appendChild(status);
+}
+
+function _createTapToEnable(message, onTapHandler) {
+  // Remove existing UI if present
+  _removeExistingUI();
+  
+  // Create overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'tapOverlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    cursor: pointer;
+  `;
+  
+  // Create message
+  const messageDiv = document.createElement('div');
+  messageDiv.textContent = message;
+  messageDiv.style.cssText = `
+    color: white;
+    font-size: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    text-align: center;
+    padding: 40px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+  `;
+  
+  overlay.appendChild(messageDiv);
+  
+  // Add tap handler
+  overlay.addEventListener('click', async () => {
+    messageDiv.textContent = 'Enabling...';
+    await onTapHandler();
+    document.body.removeChild(overlay);
+  });
+  
+  document.body.appendChild(overlay);
+}
+
+function _removeExistingUI() {
+  const button = document.getElementById('permissionButton');
+  const status = document.getElementById('permissionStatus');
+  const overlay = document.getElementById('tapOverlay');
+  
+  if (button) button.remove();
+  if (status) status.remove();
+  if (overlay) overlay.remove();
+}
+
+// =========================================
+// GESTURE BLOCKING IMPLEMENTATION
+// =========================================
+
+function _initializeGestureBlocking() {
   // Prevent back navigation
   window.history.pushState(null, '', window.location.href);
   window.onpopstate = function() {
@@ -105,17 +291,11 @@ function initializeGestureBlocking() {
     e.returnValue = '';
   });
   
-  // Initialize edge swipe prevention
-  initializeEdgeSwipePrevention();
-  
-  // Initialize other gesture prevention
-  initializeOtherGesturePrevention();
+  _initializeEdgeSwipePrevention();
+  _initializeOtherGesturePrevention();
 }
 
-// =========================================
-// EDGE SWIPE PREVENTION
-// =========================================
-function initializeEdgeSwipePrevention() {
+function _initializeEdgeSwipePrevention() {
   let touchStartX = 0;
   let touchStartY = 0;
   const edgeThreshold = 20;
@@ -160,10 +340,7 @@ function initializeEdgeSwipePrevention() {
   }, { passive: false, capture: true });
 }
 
-// =========================================
-// OTHER GESTURE PREVENTION
-// =========================================
-function initializeOtherGesturePrevention() {
+function _initializeOtherGesturePrevention() {
   // Prevent pinch zoom
   document.addEventListener('gesturestart', function(e) {
     e.preventDefault();
@@ -195,19 +372,16 @@ function initializeOtherGesturePrevention() {
   };
 }
 
-// =========================================
-// P5.JS GESTURE OVERRIDE HELPERS
-// =========================================
-function initializeP5TouchOverrides() {
+function _initializeP5TouchOverrides() {
   // Wait for p5 to be ready
   setTimeout(() => {
     if (window._setupDone) {
-      overrideP5Touch();
+      _overrideP5Touch();
     } else {
       // Try again after setup
       const checkP5 = setInterval(() => {
         if (window._setupDone) {
-          overrideP5Touch();
+          _overrideP5Touch();
           clearInterval(checkP5);
         }
       }, 100);
@@ -215,7 +389,7 @@ function initializeP5TouchOverrides() {
   }, 100);
 }
 
-function overrideP5Touch() {
+function _overrideP5Touch() {
   const origTouchStarted = window.touchStarted || function() {};
   const origTouchMoved = window.touchMoved || function() {};
   const origTouchEnded = window.touchEnded || function() {};
@@ -223,7 +397,7 @@ function overrideP5Touch() {
   const origMouseDragged = window.mouseDragged || function() {};
   const origMouseReleased = window.mouseReleased || function() {};
   
-  // Ensure all touch functions return false
+  // Ensure all touch functions return false to prevent default behaviors
   window.touchStarted = function(e) {
     origTouchStarted(e);
     return false;
@@ -254,3 +428,31 @@ function overrideP5Touch() {
     return false;
   };
 }
+
+// =========================================
+// LEGACY COMPATIBILITY
+// =========================================
+
+// Initialize gesture blocking on DOM load for backward compatibility
+document.addEventListener('DOMContentLoaded', function() {
+  // Check for old-style HTML elements
+  const startButton = document.getElementById('startButton');
+  const statusText = document.getElementById('statusText');
+  
+  if (startButton && statusText) {
+    console.warn('⚠️  Legacy HTML elements detected. Consider using the new API functions instead.');
+    // Maintain backward compatibility
+    startButton.addEventListener('click', async () => {
+      startButton.classList.add('hidden');
+      statusText.classList.remove('hidden');
+      statusText.textContent = 'Requesting permissions...';
+      
+      await _requestMotionPermissions();
+      await _requestMicrophonePermissions();
+      
+      statusText.classList.add('hidden');
+    });
+    
+    lockGestures(); // Auto-lock gestures for legacy mode
+  }
+});
