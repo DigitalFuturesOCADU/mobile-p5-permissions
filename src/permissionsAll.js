@@ -456,3 +456,221 @@ document.addEventListener('DOMContentLoaded', function() {
     lockGestures(); // Auto-lock gestures for legacy mode
   }
 });
+
+// =========================================
+// DEBUG SYSTEM - ON-SCREEN CONSOLE
+// =========================================
+
+// Debug system state
+let _debugPanel = null;
+let _debugVisible = false;
+let _debugMessages = [];
+const MAX_DEBUG_MESSAGES = 20;
+
+/**
+ * Show the on-screen debug panel
+ */
+function showDebug() {
+  _createDebugPanel();
+  _debugPanel.style.display = 'block';
+  _debugVisible = true;
+}
+
+/**
+ * Hide the on-screen debug panel
+ */
+function hideDebug() {
+  if (_debugPanel) {
+    _debugPanel.style.display = 'none';
+    _debugVisible = false;
+  }
+}
+
+/**
+ * Toggle the debug panel visibility
+ */
+function toggleDebug() {
+  if (_debugVisible) {
+    hideDebug();
+  } else {
+    showDebug();
+  }
+}
+
+/**
+ * Debug function - works like console.log but shows on screen
+ * Also logs to browser console
+ */
+function debug(...args) {
+  // Also log to browser console
+  console.log(...args);
+  
+  // Format arguments like console.log does
+  const message = args.map(arg => {
+    if (typeof arg === 'object' && arg !== null) {
+      try {
+        return JSON.stringify(arg, null, 2);
+      } catch (e) {
+        return String(arg);
+      }
+    }
+    return String(arg);
+  }).join(' ');
+  
+  // Add timestamp
+  const timestamp = new Date().toLocaleTimeString('en-US', {
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    fractionalSecondDigits: 3
+  });
+  
+  const timestampedMessage = `[${timestamp}] ${message}`;
+  
+  // Add to message history
+  _debugMessages.push(timestampedMessage);
+  if (_debugMessages.length > MAX_DEBUG_MESSAGES) {
+    _debugMessages.shift();
+  }
+  
+  // Update display if panel exists
+  if (_debugPanel) {
+    _updateDebugDisplay();
+  }
+}
+
+/**
+ * Clear all debug messages
+ */
+debug.clear = function() {
+  _debugMessages = [];
+  if (_debugPanel) {
+    _updateDebugDisplay();
+  }
+  console.clear();
+};
+
+/**
+ * Create the debug panel DOM element
+ */
+function _createDebugPanel() {
+  if (_debugPanel) return;
+  
+  _debugPanel = document.createElement('div');
+  _debugPanel.id = 'mobile-debug-panel';
+  _debugPanel.innerHTML = `
+    <div id="mobile-debug-header">
+      <span>Debug</span>
+      <button id="mobile-debug-close">×</button>
+    </div>
+    <div id="mobile-debug-content"></div>
+  `;
+  
+  // Add styles
+  const style = document.createElement('style');
+  style.textContent = `
+    #mobile-debug-panel {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 350px;
+      max-width: calc(100vw - 40px);
+      max-height: 400px;
+      background: rgba(0, 0, 0, 0.9);
+      color: #ffffff;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      z-index: 10000;
+      display: none;
+    }
+    
+    #mobile-debug-header {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 8px 8px 0 0;
+    }
+    
+    #mobile-debug-header span {
+      font-weight: bold;
+      font-size: 13px;
+    }
+    
+    #mobile-debug-close {
+      background: none;
+      border: none;
+      color: #ffffff;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    #mobile-debug-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+    
+    #mobile-debug-content {
+      padding: 12px;
+      max-height: 340px;
+      overflow-y: auto;
+      word-wrap: break-word;
+      line-height: 1.4;
+    }
+    
+    .debug-message {
+      margin-bottom: 4px;
+      white-space: pre-wrap;
+    }
+    
+    .debug-timestamp {
+      color: #888;
+      font-size: 10px;
+    }
+    
+    @media (max-width: 480px) {
+      #mobile-debug-panel {
+        width: calc(100vw - 20px);
+        right: 10px;
+        top: 10px;
+      }
+    }
+  `;
+  
+  document.head.appendChild(style);
+  document.body.appendChild(_debugPanel);
+  
+  // Add close button functionality
+  document.getElementById('mobile-debug-close').onclick = hideDebug;
+  
+  // Update display with existing messages
+  _updateDebugDisplay();
+}
+
+/**
+ * Update the debug panel display with current messages
+ */
+function _updateDebugDisplay() {
+  if (!_debugPanel) return;
+  
+  const content = document.getElementById('mobile-debug-content');
+  if (!content) return;
+  
+  content.innerHTML = _debugMessages
+    .map(msg => `<div class="debug-message">${msg}</div>`)
+    .join('');
+  
+  // Auto-scroll to bottom
+  content.scrollTop = content.scrollHeight;
+}
