@@ -3,100 +3,76 @@
 // A well-commented template for mobile p5.js projects
 // ============================================
 
+// Configuration variables
+const SHOW_DEBUG = true; // Set to false to hide mobile debug console
+
 // Global variables
 let gif; // Variable to store the loaded GIF
-let isGifLoaded = false; // Flag to track if GIF has loaded successfully
+
+// GIF display variables (calculated once in setup)
+let gifScale;
+let gifWidth, gifHeight;
+let gifX, gifY;
+
+// ============================================
+// PRELOAD FUNCTION - Runs before setup()
+// ============================================
+function preload() {
+    // Load the GIF file before setup() runs
+    // This ensures the GIF is ready when we need it
+    gif = loadImage('image/kindleEvo.gif');
+}
 
 // ============================================
 // SETUP FUNCTION - Runs once at the start
 // ============================================
 function setup() {
-    // Create full-screen canvas
-    createCanvas(windowWidth, windowHeight);
-    
-    // Debug: Log that setup has started
-    debug("🚀 Setup function started");
-    debug("Canvas size:", windowWidth + "x" + windowHeight);
-    
-    // STEP 1: Enable debug console for mobile development
-    // This shows debug messages on the mobile screen
+  // Create a portrait canvas that adapts to window size
+  createCanvas(windowWidth, windowHeight);
+  
+  // Calculate GIF display properties once
+  calculateGifDisplay();
+  
+  // Lock device orientation changes to prevent unwanted behavior
+  lockGestures();
+  
+  // Show debug console if enabled
+  if (SHOW_DEBUG) {
     showDebug();
-    debug("📱 Debug console enabled");
-    
-    // STEP 2: Lock mobile gestures to prevent browser interference
-    // This prevents swipe gestures, zoom, refresh, etc.
-    lockGestures();
-    debug("🔒 Mobile gestures locked");
-    
-    // STEP 3: Load the GIF file
-    // Use preload() for better loading, but this works too
-    debug("📁 Loading GIF file...");
-    gif = loadImage('image/kindleEvo.gif', 
-        // Success callback
-        function() {
-            isGifLoaded = true;
-            debug("✅ GIF loaded successfully!");
-            debug("GIF dimensions:", gif.width + "x" + gif.height);
-        },
-        // Error callback
-        function() {
-            debug("❌ Error loading GIF file");
-            debug("Check that image/kindleEvo.gif exists");
-        }
-    );
-    
-    // Set initial background
-    background(50);
-    
-    debug("🎯 Setup complete - waiting for GIF to load");
+  }
+}
+
+function calculateGifDisplay() {
+  // Calculate scale to fill GIF to canvas while maintaining aspect ratio
+  let scaleX = width / gif.width;
+  let scaleY = height / gif.height;
+  gifScale = max(scaleX, scaleY); // Use larger scale to fill canvas
+  
+  // Calculate actual display dimensions
+  gifWidth = gif.width * gifScale;
+  gifHeight = gif.height * gifScale;
+  
+  // Center the GIF on the canvas
+  gifX = (width - gifWidth) / 2;
+  gifY = (height - gifHeight) / 2;
 }
 
 // ============================================
 // DRAW FUNCTION - Runs continuously (60fps by default)
 // ============================================
-function draw() {
+function draw() 
+{
     // Clear the background with a dark color
     background(50, 50, 60);
     
-    // Only draw if GIF has loaded
-    if (isGifLoaded && gif) {
-        
-        // Calculate position to center the GIF
-        let x = (width - gif.width) / 2;
-        let y = (height - gif.height) / 2;
-        
-        // Draw the GIF at the calculated position
-        image(gif, x, y);
-        
-        // Optional: Draw a frame around the GIF
-        noFill();
-        stroke(255, 255, 255, 100);
-        strokeWeight(2);
-        rect(x - 2, y - 2, gif.width + 4, gif.height + 4);
-        
-    } else {
-        // Show loading message while GIF loads
-        fill(255);
-        textAlign(CENTER, CENTER);
-        textSize(24);
-        text("Loading GIF...", width/2, height/2);
-        
-        // Show a spinning loading indicator
-        push();
-        translate(width/2, height/2 + 50);
-        rotate(frameCount * 0.1);
-        stroke(255);
-        strokeWeight(3);
-        noFill();
-        arc(0, 0, 30, 30, 0, PI + frameCount * 0.2);
-        pop();
-    }
+    // Display the GIF using pre-calculated dimensions and position
+    image(gif, gifX, gifY, gifWidth, gifHeight);
     
     // Debug info in corner (only show first few seconds to avoid spam)
-    if (frameCount < 180) { // Show for first 3 seconds (60fps * 3)
+    if (SHOW_DEBUG && frameCount < 180) { // Show for first 3 seconds (60fps * 3)
         if (frameCount % 60 === 0) { // Update once per second
-            debug("🎬 Frame count:", frameCount);
-            debug("📊 Frame rate:", Math.round(frameRate()) + " fps");
+            debug("Frame count:", frameCount);
+            debug("Frame rate:", Math.round(frameRate()) + " fps");
         }
     }
 }
@@ -105,58 +81,17 @@ function draw() {
 // WINDOW RESIZE HANDLER
 // ============================================
 function windowResized() {
-    // Resize canvas when device orientation changes
+    // Resize canvas to match window dimensions
     resizeCanvas(windowWidth, windowHeight);
-    debug("📱 Window resized to:", windowWidth + "x" + windowHeight);
-}
-
-// ============================================
-// TOUCH/CLICK INTERACTION EXAMPLES
-// ============================================
-
-// Touch started (finger down)
-function touchStarted() {
-    debug("👆 Touch started at:", mouseX + ", " + mouseY);
     
-    // Example: Change background color on touch
-    background(random(100, 255), random(100, 255), random(100, 255));
+    // Recalculate GIF display properties for new canvas size
+    calculateGifDisplay();
     
-    // Prevent default browser behavior
-    return false;
-}
-
-// Touch ended (finger up)
-function touchEnded() {
-    debug("🖐️ Touch ended");
-    return false;
-}
-
-// Double tap detection
-function doubleClicked() {
-    debug("👆👆 Double tap detected!");
-    
-    // Example: Reset to original background
-    background(50, 50, 60);
-    
-    return false;
-}
-
-// ============================================
-// UTILITY FUNCTIONS
-// ============================================
-
-// Function to toggle debug console visibility
-function keyPressed() {
-    if (key === 'd' || key === 'D') {
-        toggleDebug();
-        debug("🔧 Debug console toggled");
-    }
-    
-    if (key === 'c' || key === 'C') {
-        debug.clear();
-        debug("🧹 Debug console cleared");
+    if (SHOW_DEBUG) {
+        debug("Window resized to:", windowWidth + "x" + windowHeight);
     }
 }
+
 
 // ============================================
 // TEMPLATE USAGE NOTES:
@@ -165,40 +100,46 @@ function keyPressed() {
 /*
 HOW TO USE THIS TEMPLATE:
 
-1. SETUP CHECKLIST:
-   ✅ p5.js library loaded
-   ✅ Mobile permissions library loaded
-   ✅ Debug console enabled
-   ✅ Mobile gestures locked
-   ✅ GIF file loaded with error handling
+1. CONFIGURATION:
+   - Set SHOW_DEBUG to true/false to enable/disable mobile debug console
+   - This single variable controls all debug output
 
-2. CUSTOMIZATION:
+2. SETUP CHECKLIST:
+   - p5.js library loaded
+   - Mobile permissions library loaded
+   - GIF file loaded with preload()
+   - Debug console enabled (if SHOW_DEBUG is true)
+   - Mobile gestures locked
+
+3. CUSTOMIZATION:
    - Replace 'image/kindleEvo.gif' with your own GIF file
    - Modify the draw() function for your specific needs
    - Add your own interaction functions
    - Customize the styling in index.html
 
-3. DEBUG FEATURES:
-   - Press 'D' to toggle debug console
+4. DEBUG FEATURES (when SHOW_DEBUG = true):
+   - Press 'D' to toggle debug console visibility
    - Press 'C' to clear debug messages
    - Debug messages show loading status, touch events, etc.
+   - All debug output can be disabled by setting SHOW_DEBUG = false
 
-4. MOBILE FEATURES:
+5. MOBILE FEATURES:
    - Gestures are locked (no zoom, swipe, refresh)
    - Touch events are handled properly
    - Responsive canvas that adapts to screen size
-   - Debug console visible on mobile screen
+   - Debug console visible on mobile screen (when enabled)
 
-5. NEXT STEPS:
+6. NEXT STEPS:
    - Add motion sensor support with enableGyroTap()
    - Add microphone support with enableMicTap()
    - Implement your creative interactive features
    - Test on actual mobile devices
 
-6. COMMON PATTERNS:
+7. COMMON PATTERNS:
+   - Use preload() for loading assets (images, sounds, etc.)
    - Use setup() for initialization
    - Use draw() for continuous animation
    - Use touchStarted/touchEnded for interactions
    - Use windowResized() for orientation changes
-   - Use debug() instead of console.log() for mobile
+   - Use debug() instead of console.log() for mobile (when SHOW_DEBUG = true)
 */
