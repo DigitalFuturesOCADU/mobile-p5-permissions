@@ -7,13 +7,33 @@
 
 **Easy-to-use permission handling for mobile p5.js projects**
 
-A lightweight library that handles device permissions and gesture blocking for mobile web applications built with p5.js. No more dealing with iOS permission requests, Android compatibility issues, or unwanted browser gestures.
+A lightweight library that handles device permissions and gesture blocking for mobile web applications built with p5.js. It simplifies the management of iOS permission requests, Android compatibility issues, or unwanted browser gestures.
+
+## Table of Contents
+
+- [Features](#features)
+- [Quick Start](#quick-start)
+  - [CDN (Recommended)](#cdn-recommended)
+  - [Basic Setup](#basic-setup)
+- [API Reference](#api-reference)
+  - [Core Functions](#core-functions)
+  - [Status Variables](#status-variables)
+  - [lockGestures()](#lockgestures)
+  - [Motion Sensor Activation](#motion-sensor-activation)
+  - [Microphone Activation](#microphone-activation)
+  - [Debug System](#debug-system)
+- [Mobile CSS Optimizations](#mobile-css-optimizations)
+- [Examples](#examples)
+- [Installation Options](#installation-options)
+- [Browser Compatibility](#browser-compatibility)
+- [About](#about)
+- [License](#license)
 
 ## Features
 
 - Cross-platform compatibility - Works on iOS and Android
 - Comprehensive gesture blocking - Prevents unwanted mobile browser behaviors
-- Zero configuration - Just include and go
+- Simple implemtation in P5
 - On-screen debug system with timestamps
 - Interactive examples and demos
 
@@ -28,41 +48,95 @@ A lightweight library that handles device permissions and gesture blocking for m
 
 ### Basic Setup
 
+#### Index HTML
+
 ```html
 <!DOCTYPE html>
 <html>
 <head>
   <title>Mobile p5.js App</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.10/p5.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.3.0/src/permissionsAll.js"></script>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <script>
-    function setup() {
-      createCanvas(windowWidth, windowHeight);
-      
-      // Lock mobile gestures to prevent browser interference
-      lockGestures();
-      
-      // Enable motion sensors with tap-to-start
-      enableGyroTap('Tap to enable motion sensors');
-      
-      // Enable microphone with tap-to-start  
-      enableMicTap('Tap to enable microphone');
-    }
-    
-    function draw() {
-      background(220);
-      
-      if (window.sensorsEnabled) {
-        // Use device rotation and acceleration
-        fill(255, 0, 0);
-        circle(width/2 + rotationY * 5, height/2 + rotationX * 5, 50);
-      }
-    }
-  </script>
+  <script src="sketch.js"></script>
 </body>
 </html>
+```
+
+#### CSS
+
+```css
+/* Mobile-optimized CSS for p5.js projects */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: fixed;
+    touch-action: none;
+    background: #000;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+canvas {
+    display: block;
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+body {
+    -webkit-overflow-scrolling: touch;
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+```
+
+#### p5.js
+
+```javascript
+function setup() {
+  // Show debug panel FIRST to catch setup errors
+  showDebug();
+  
+  createCanvas(windowWidth, windowHeight);
+  
+  // Lock mobile gestures to prevent browser interference
+  lockGestures();
+  
+  // Enable motion sensors with tap-to-start
+  enableGyroTap('Tap to enable motion sensors');
+  
+  // Enable microphone with tap-to-start  
+  enableMicTap('Tap to enable microphone');
+}
+
+function draw() {
+  background(220);
+  
+  if (window.sensorsEnabled) {
+    // Use device rotation and acceleration
+    fill(255, 0, 0);
+    circle(width/2 + rotationY * 5, height/2 + rotationX * 5, 50);
+  }
+}
 ```
 
 ## API Reference
@@ -81,6 +155,10 @@ enableGyroButton(text)    // Button-based sensor activation
 enableMicTap(message)     // Tap anywhere to enable microphone  
 enableMicButton(text)     // Button-based microphone activation
 
+// Status variables (check these in your code)
+window.sensorsEnabled     // Boolean: true when motion sensors are active
+window.micEnabled         // Boolean: true when microphone is active
+
 // Debug system (enhanced in v1.3.0)
 showDebug()       // Show on-screen debug panel with automatic error catching
 hideDebug()       // Hide debug panel
@@ -91,30 +169,183 @@ debugWarn(...args)  // Display warnings with yellow styling
 debug.clear()     // Clear debug messages
 ```
 
-### Available Data
+### Status Variables
 
-After permissions are enabled, these p5.js variables work on mobile:
+**Purpose:** Check whether permissions have been granted and sensors are active.
 
+**Variables:**
+- `window.sensorsEnabled` - Boolean indicating if motion sensors are active
+- `window.micEnabled` - Boolean indicating if microphone is active
+
+**Usage:**
 ```javascript
-// Motion sensors (when window.sensorsEnabled is true)
-rotationX, rotationY, rotationZ         // Device rotation
-accelerationX, accelerationY, accelerationZ  // Device acceleration
-deviceShaken                            // Shake detection
-deviceMoved                             // Movement detection
+function draw() {
+  // Always check before using sensor data
+  if (window.sensorsEnabled) {
+    // Safe to use rotationX, rotationY, accelerationX, etc.
+    let tilt = rotationX;
+  }
+  
+  if (window.micEnabled) {
+    // Safe to use microphone
+    let audioLevel = mic.getLevel();
+  }
+}
 
-// Touch input (always available)
-touches[]                               // Array of touch points
-mouseX, mouseY                          // Touch coordinates
-mouseIsPressed                          // Touch state
-
-// Microphone (when window.micEnabled is true)  
-mic.getLevel()                          // Audio input level (0-1)
+// You can also use them for conditional UI
+function setup() {
+  enableGyroTap('Tap to enable motion');
+  
+  // Show different instructions based on status
+  if (!window.sensorsEnabled) {
+    debug("Motion sensors not yet enabled");
+  }
+}
 ```
 
-## Debug System
+### lockGestures()
 
-Version 1.3.0 includes a powerful on-screen debug system with **automatic error catching** - essential for mobile development where traditional browser dev tools aren't accessible:
+**Purpose:** Prevents unwanted mobile browser gestures that can interfere with your p5.js app.
 
+**When to use:** Call once in your `setup()` function after creating the canvas.
+
+**What it blocks:**
+- **Pinch-to-zoom** - Prevents users from accidentally zooming the page
+- **Pull-to-refresh** - Stops the browser refresh gesture when pulling down
+- **Swipe navigation** - Disables back/forward swipe gestures
+- **Long-press context menus** - Prevents copy/paste menus from appearing
+- **Text selection** - Stops accidental text highlighting on touch and hold
+- **Double-tap zoom** - Eliminates double-tap to zoom behavior
+
+```javascript
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  lockGestures(); // Essential for smooth mobile interaction
+}
+```
+
+### Motion Sensor Activation
+
+**Purpose:** Enable device motion and orientation sensors with user permission handling.
+
+**Commands:**
+- `enableGyroTap(message)` - Tap anywhere on screen to enable sensors
+- `enableGyroButton(text)` - Creates a button with custom text to enable sensors
+
+**Usage:**
+```javascript
+// Tap-to-enable (recommended)
+enableGyroTap('Tap to enable motion sensors');
+
+// Button-based activation
+enableGyroButton('Enable Motion');
+```
+
+**Available p5.js Variables (when `window.sensorsEnabled` is true):**
+
+| Variable | Description | Range/Units |
+|----------|-------------|-------------|
+| `rotationX` | Device tilt forward/backward | -180° to 180° |
+| `rotationY` | Device tilt left/right | -180° to 180° |
+| `rotationZ` | Device rotation around screen | -180° to 180° |
+| `accelerationX` | Acceleration left/right | m/s² |
+| `accelerationY` | Acceleration up/down | m/s² |
+| `accelerationZ` | Acceleration forward/back | m/s² |
+| `deviceShaken` | Shake detection event | true when shaken |
+| `deviceMoved` | Movement detection event | true when moved |
+
+**⚠️ Important:** All motion sensor variables, including `deviceShaken` and `deviceMoved`, are only available when `window.sensorsEnabled` is true. Always check this status before using any motion data.
+
+**Example:**
+```javascript
+function draw() {
+  // CRITICAL: Always check window.sensorsEnabled first
+  if (window.sensorsEnabled) {
+    // Tilt-controlled circle
+    let x = width/2 + rotationY * 3;
+    let y = height/2 + rotationX * 3;
+    circle(x, y, 50);
+    
+    // Shake detection - only works when sensors are enabled
+    if (deviceShaken) {
+      background(random(255), random(255), random(255));
+    }
+    
+    // Movement detection - also requires sensors to be enabled
+    if (deviceMoved) {
+      fill(255, 0, 0);
+    }
+  } else {
+    // Show fallback when sensors not enabled
+    text('Tap to enable motion sensors', 20, 20);
+  }
+}
+```
+
+### Microphone Activation
+
+**Purpose:** Enable device microphone with user permission handling for audio-reactive applications.
+
+**Commands:**
+- `enableMicTap(message)` - Tap anywhere on screen to enable microphone
+- `enableMicButton(text)` - Creates a button with custom text to enable microphone
+
+**Usage:**
+```javascript
+// Tap-to-enable (recommended)
+enableMicTap('Tap to enable microphone');
+
+// Button-based activation
+enableMicButton('Enable Audio');
+```
+
+**Available p5.js Variables (when `window.micEnabled` is true):**
+
+| Variable | Description | Range |
+|----------|-------------|-------|
+| `mic.getLevel()` | Current audio input level | 0.0 to 1.0 |
+
+**Example:**
+```javascript
+function draw() {
+  if (window.micEnabled) {
+    // Audio-reactive visualization
+    let level = mic.getLevel();
+    let size = map(level, 0, 1, 10, 200);
+    
+    background(level * 255);
+    circle(width/2, height/2, size);
+  }
+}
+```
+
+### Debug System
+
+**Purpose:** Essential on-screen debugging system for mobile development where traditional browser dev tools aren't accessible. Provides automatic error catching, timestamped logging, and color-coded messages.
+
+**Why use it:** Mobile browsers often hide JavaScript errors, making debugging difficult. This system displays all errors, warnings, and custom messages directly on your mobile screen with timestamps and color coding.
+
+**Commands:**
+
+| Function | Purpose | Example |
+|----------|---------|---------|
+| `showDebug()` | Show debug panel and enable error catching | `showDebug()` |
+| `hideDebug()` | Hide debug panel | `hideDebug()` |
+| `toggleDebug()` | Toggle panel visibility | `toggleDebug()` |
+| `debug(...args)` | Log messages (white text) | `debug("App started", frameRate())` |
+| `debugError(...args)` | Display errors (red text) | `debugError("Connection failed")` |
+| `debugWarn(...args)` | Display warnings (yellow text) | `debugWarn("Low battery")` |
+| `debug.clear()` | Clear all messages | `debug.clear()` |
+
+**Key Features:**
+- **Automatic Error Catching** - JavaScript errors automatically displayed with red styling
+- **Error Location** - Shows filename and line number for easy debugging
+- **Timestamps** - All messages include precise timestamps
+- **Color Coding** - Errors (red), warnings (yellow), normal messages (white)
+- **Mobile Optimized** - Touch-friendly interface that works on small screens
+- **Keyboard Shortcuts** - Press 'D' to toggle, 'C' to clear (when debug is enabled)
+
+**Critical Setup:**
 ```javascript
 function setup() {
   // IMPORTANT: Call showDebug() FIRST to catch setup errors
@@ -122,39 +353,24 @@ function setup() {
   
   createCanvas(windowWidth, windowHeight);
   // Any errors after this point will be automatically caught and displayed
-  calculateSomething(); // If this errors, you'll see it on screen!
 }
-
-// Use like console.log but visible on mobile screen
-debug("App started");
-debug("Rotation:", rotationX, rotationY, rotationZ);
-debug("Touch count:", touches.length);
-debug({x: mouseX, y: mouseY});
-
-// Manual error/warning messages
-debugError("Something went wrong!");
-debugWarn("This is a warning");
-
-// Clear messages
-debug.clear();
-
-// Hide when done
-hideDebug();
 ```
 
-### Key Features
+**Usage Examples:**
+```javascript
+// Basic logging
+debug("Touch at:", mouseX, mouseY);
+debug("Sensors enabled:", window.sensorsEnabled);
 
-- **🚨 Automatic Error Catching**: JavaScript errors are automatically displayed with red styling
-- **📍 Error Location**: Shows filename and line number for easy debugging
-- **⏰ Timestamps**: All messages include precise timestamps
-- **🎨 Color Coding**: Errors (red), warnings (yellow), normal messages (white)
-- **📱 Mobile Optimized**: Touch-friendly interface that works on small screens
-- **⌨️ Keyboard Shortcuts**: Press 'D' to toggle, 'C' to clear (when debug is enabled)
+// Error handling
+debugError("Failed to load image");
+debugWarn("Frame rate dropping:", frameRate());
 
-### Critical Setup Note
-
-**Always call `showDebug()` at the very beginning of `setup()`** to catch errors that might occur during initialization. If you call it after an error occurs, you won't see that error in the debug panel.
+// Objects and arrays
+debug("Touch points:", touches);
+debug({rotation: rotationX, acceleration: accelerationX});
 ```
+
 
 ## Mobile CSS Optimizations
 
@@ -401,16 +617,11 @@ Download from [GitHub Releases](https://github.com/DigitalFuturesOCADU/mobile-p5
 - Safari 13+
 - Firefox 75+
 
-## Contributing
+## About
 
-Contributions are welcome! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+This library was created by Nick Puckett [https://github.com/npuckett](https://github.com/npuckett).
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
-
-- [Live Examples](https://digitalfuturesocadu.github.io/mobile-p5-permissions/)
-- [GitHub Issues](https://github.com/DigitalFuturesOCADU/mobile-p5-permissions/issues)
-- [npm Package](https://www.npmjs.com/package/mobile-p5-permissions)
