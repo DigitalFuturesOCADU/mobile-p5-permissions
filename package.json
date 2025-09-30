@@ -5,11 +5,13 @@
   "main": "src/permissionsAll.js",
   "files": [
     "src/",
+    "dist/",
     "examples/",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
+    "build": "npx terser src/permissionsAll.js --compress --mangle --output dist/p5.mobile-permissions.min.js && cp src/permissionsAll.js dist/p5.mobile-permissions.js",
     "test": "echo \"No tests specified\" && exit 0",
     "prepublishOnly": "npm test",
     "prepare": "echo \"Package prepared for publishing\"",
@@ -51,7 +53,9 @@
   "peerDependencies": {
     "p5": "^1.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "terser": "^5.44.0"
+  },
   "engines": {
     "node": ">=12.0.0"
   },

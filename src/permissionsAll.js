@@ -1,3 +1,13 @@
+/*!
+ * mobile-p5-permissions v1.3.0
+ * Easy-to-use permission handling and gesture blocking for mobile p5.js projects
+ * https://github.com/DigitalFuturesOCADU/mobile-p5-permissions
+ * 
+ * Copyright (c) 2025 Nick Puckett
+ * Released under the MIT License
+ * https://opensource.org/licenses/MIT
+ */
+
 // ============================================= 
 // MOBILE P5.JS PERMISSIONS - REFACTORED
 // Clean API for enabling permissions in p5.js sketches
@@ -887,4 +897,31 @@ function _updateDebugDisplay() {
   
   // Auto-scroll to bottom
   content.scrollTop = content.scrollHeight;
+}
+
+// =========================================
+// P5.JS NAMESPACE SUPPORT
+// =========================================
+
+/**
+ * Add functions to p5.js prototype for namespace support
+ * This allows using both global functions and p5.prototype.functionName
+ */
+if (typeof p5 !== 'undefined' && p5.prototype) {
+  // Core permission functions
+  p5.prototype.lockGestures = lockGestures;
+  p5.prototype.enableGyroTap = enableGyroTap;
+  p5.prototype.enableGyroButton = enableGyroButton;
+  p5.prototype.enableMicTap = enableMicTap;
+  p5.prototype.enableMicButton = enableMicButton;
+  
+  // Debug functions
+  p5.prototype.showDebug = showDebug;
+  p5.prototype.hideDebug = hideDebug;
+  p5.prototype.toggleDebug = toggleDebug;
+  p5.prototype.debug = debug;
+  p5.prototype.debugError = debugError;
+  p5.prototype.debugWarn = debugWarn;
+  
+  console.log('✅ Mobile p5.js Permissions: p5.prototype functions registered');
 }
