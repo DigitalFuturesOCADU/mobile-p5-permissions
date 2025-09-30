@@ -1,6 +1,12 @@
 # Mobile p5.js Permissions
 
-[![CI](https://github.com/DigitalFuturesOCADU/mobile-p5-permissions/workflows/CI/badge.svg)](https://github.com/DigitalFuturesOCADU/mobile-p5-permissions/actions)
+[![CI](https://```html
+<!-- Complete mobile p5.js solution (minified) -->
+<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.0/dist/p5.mobile-permissions.min.js"></script>
+
+<!-- Or development version (unminified) -->
+<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.0/dist/p5.mobile-permissions.js"></script>
+```com/DigitalFuturesOCADU/mobile-p5-permissions/workflows/CI/badge.svg)](https://github.com/DigitalFuturesOCADU/mobile-p5-permissions/actions)
 [![npm version](https://badge.fury.io/js/mobile-p5-permissions.svg)](https://badge.fury.io/js/mobile-p5-permissions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub Pages](https://img.shields.io/badge/Demo-Live%20Examples-blue)](https://digitalfuturesocadu.github.io/mobile-p5-permissions/)
@@ -43,10 +49,10 @@ A lightweight library that handles device permissions and gesture blocking for m
 
 ```html
 <!-- Complete mobile p5.js solution (minified) -->
-<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.3.0/dist/p5.mobile-permissions.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.0/dist/p5.mobile-permissions.min.js"></script>
 
 <!-- Or development version (unminified) -->
-<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.3.0/dist/p5.mobile-permissions.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.0/dist/p5.mobile-permissions.js"></script>
 ```
 
 ### Basic Setup
@@ -60,7 +66,7 @@ A lightweight library that handles device permissions and gesture blocking for m
   <title>Mobile p5.js App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.10/p5.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.3.0/dist/p5.mobile-permissions.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.0/dist/p5.mobile-permissions.min.js"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -162,7 +168,7 @@ enableMicButton(text)     // Button-based microphone activation
 window.sensorsEnabled     // Boolean: true when motion sensors are active
 window.micEnabled         // Boolean: true when microphone is active
 
-// Debug system (enhanced in v1.3.0)
+// Debug system (enhanced in v1.4.0)
 showDebug()       // Show on-screen debug panel with automatic error catching
 hideDebug()       // Hide debug panel
 toggleDebug()     // Toggle panel visibility
@@ -497,7 +503,7 @@ Here's a ready-to-use HTML template that combines everything - copy this into yo
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.10/p5.min.js"></script>
     
     <!-- Load mobile permissions library -->
-    <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.3.0/dist/p5.mobile-permissions.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.0/dist/p5.mobile-permissions.min.js"></script>
     
     <!-- Mobile-optimized styles -->
     <style>
@@ -612,7 +618,7 @@ Each example includes QR codes for easy mobile testing and demonstrates both tra
 
 ### CDN (Recommended)
 ```html
-<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.3.0/src/permissionsAll.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.0/dist/p5.mobile-permissions.min.js"></script>
 ```
 
 ### npm
