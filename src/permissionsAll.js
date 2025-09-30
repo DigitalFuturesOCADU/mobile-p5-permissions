@@ -3,6 +3,73 @@
 // Clean API for enabling permissions in p5.js sketches
 // =============================================
 
+// Set up global error handling immediately when script loads
+(function() {
+  // Store original console methods before any overrides
+  window._originalConsoleError = console.error;
+  window._originalConsoleWarn = console.warn;
+  
+  // Only set up once
+  if (window._debugErrorHandlersSet) return;
+  window._debugErrorHandlersSet = true;
+  
+  // Initialize early error storage
+  window._earlyErrors = window._earlyErrors || [];
+  
+  // Global error handler for JavaScript errors
+  window.addEventListener('error', function(event) {
+    const errorMsg = event.error?.message || event.message || 'Unknown error';
+    const fileName = event.filename ? event.filename.split('/').pop() : 'unknown file';
+    const line = event.lineno || 'unknown line';
+    
+    const fullError = `${errorMsg} (${fileName}:${line})`;
+    
+    console.error('🚨 Error caught:', fullError);
+    if (event.error?.stack) {
+      console.error('Stack:', event.error.stack);
+    }
+    
+    // Store error for debug panel
+    window._earlyErrors.push({
+      type: 'error',
+      message: 'JavaScript Error: ' + fullError,
+      stack: event.error?.stack
+    });
+    
+    // Auto-show debug panel when an error occurs (if SHOW_DEBUG is true)
+    if (window.SHOW_DEBUG !== false && !window._debugVisible) {
+      // Try to show debug panel automatically
+      if (typeof showDebug === 'function') {
+        showDebug();
+      }
+    }
+    
+    // If debug panel is already visible, show immediately
+    if (window._debugVisible && typeof debugError === 'function') {
+      debugError('JavaScript Error:', fullError);
+      if (event.error?.stack) {
+        debugError('Stack trace:', event.error.stack);
+      }
+    }
+  });
+  
+  // Global handler for unhandled promise rejections
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorMsg = event.reason?.message || event.reason || 'Unknown promise rejection';
+    
+    console.error('🚨 Promise rejection caught:', errorMsg);
+    
+    window._earlyErrors.push({
+      type: 'error',
+      message: 'Unhandled Promise Rejection: ' + errorMsg
+    });
+    
+    if (window._debugVisible && typeof debugError === 'function') {
+      debugError('Unhandled Promise Rejection:', errorMsg);
+    }
+  });
+})();
+
 // Global state flags
 window.sensorsEnabled = false;
 window.micEnabled = false;
@@ -99,6 +166,9 @@ async function _requestMotionPermissions() {
     
   } catch (error) {
     console.error('Motion sensor permission error:', error);
+    if (_debugVisible) {
+      debugError('Motion sensor permission error:', error);
+    }
     // Enable anyway for non-iOS devices
     window.sensorsEnabled = true;
     _notifySketchReady();
@@ -125,6 +195,9 @@ async function _requestMicrophonePermissions() {
     
   } catch (error) {
     console.error('Microphone permission error:', error);
+    if (_debugVisible) {
+      debugError('Microphone permission error:', error);
+    }
     _notifySketchReady();
   }
 }
@@ -474,6 +547,13 @@ function showDebug() {
   _createDebugPanel();
   _debugPanel.style.display = 'block';
   _debugVisible = true;
+  window._debugVisible = true; // Global flag
+  
+  // Set up console overrides for future calls
+  _setupConsoleOverrides();
+  
+  // Immediately show any early errors that might have been caught
+  _displayEarlyErrors();
 }
 
 /**
@@ -517,6 +597,61 @@ function debug(...args) {
     return String(arg);
   }).join(' ');
   
+  _addDebugMessage(message, 'log');
+}
+
+/**
+ * Error function - shows errors on screen with red styling
+ * Also logs to browser console as error
+ */
+function debugError(...args) {
+  // Use original console.error to avoid infinite loop
+  const originalError = window._originalConsoleError || console.error;
+  originalError.apply(console, args);
+  
+  // Format arguments like console.log does
+  const message = args.map(arg => {
+    if (typeof arg === 'object' && arg !== null) {
+      try {
+        return JSON.stringify(arg, null, 2);
+      } catch (e) {
+        return String(arg);
+      }
+    }
+    return String(arg);
+  }).join(' ');
+  
+  _addDebugMessage(`❌ ERROR: ${message}`, 'error');
+}
+
+/**
+ * Warning function - shows warnings on screen with yellow styling
+ * Also logs to browser console as warning
+ */
+function debugWarn(...args) {
+  // Use original console.warn to avoid infinite loop
+  const originalWarn = window._originalConsoleWarn || console.warn;
+  originalWarn.apply(console, args);
+  
+  // Format arguments like console.log does
+  const message = args.map(arg => {
+    if (typeof arg === 'object' && arg !== null) {
+      try {
+        return JSON.stringify(arg, null, 2);
+      } catch (e) {
+        return String(arg);
+      }
+    }
+    return String(arg);
+  }).join(' ');
+  
+  _addDebugMessage(`⚠️ WARNING: ${message}`, 'warning');
+}
+
+/**
+ * Internal function to add messages to debug panel
+ */
+function _addDebugMessage(message, type = 'log') {
   // Add timestamp
   const timestamp = new Date().toLocaleTimeString('en-US', {
     hour12: false,
@@ -526,7 +661,10 @@ function debug(...args) {
     fractionalSecondDigits: 3
   });
   
-  const timestampedMessage = `[${timestamp}] ${message}`;
+  const timestampedMessage = {
+    text: `[${timestamp}] ${message}`,
+    type: type
+  };
   
   // Add to message history
   _debugMessages.push(timestampedMessage);
@@ -550,6 +688,59 @@ debug.clear = function() {
   }
   console.clear();
 };
+
+// Make debug functions globally accessible
+window.debug = debug;
+window.debugError = debugError;
+window.debugWarn = debugWarn;
+window.showDebug = showDebug;
+window.hideDebug = hideDebug;
+window.toggleDebug = toggleDebug;
+
+/**
+ * Set up console overrides to capture console.error and console.warn
+ */
+function _setupConsoleOverrides() {
+  // Only override once
+  if (window._consoleOverrideSet) return;
+  window._consoleOverrideSet = true;
+  
+  // Store original console methods for debug functions to use
+  window._originalConsoleError = console.error;
+  window._originalConsoleWarn = console.warn;
+  
+  // Override console.error to also show in debug panel
+  console.error = function(...args) {
+    window._originalConsoleError.apply(console, args);
+    if (_debugVisible) {
+      debugError(...args);
+    }
+  };
+  
+  // Override console.warn to also show in debug panel
+  console.warn = function(...args) {
+    window._originalConsoleWarn.apply(console, args);
+    if (_debugVisible) {
+      debugWarn(...args);
+    }
+  };
+}
+
+/**
+ * Display any errors that were caught before the debug panel was ready
+ */
+function _displayEarlyErrors() {
+  if (window._earlyErrors && window._earlyErrors.length > 0) {
+    debugError(`🚨 Found ${window._earlyErrors.length} early error(s):`);
+    window._earlyErrors.forEach(error => {
+      debugError(error.message);
+      if (error.stack) {
+        debugError('Stack trace:', error.stack);
+      }
+    });
+    window._earlyErrors = []; // Clear after displaying
+  }
+}
 
 /**
  * Create the debug panel DOM element
@@ -634,6 +825,22 @@ function _createDebugPanel() {
       white-space: pre-wrap;
     }
     
+    .debug-message.error {
+      color: #ff6b6b;
+      background: rgba(255, 107, 107, 0.1);
+      padding: 4px;
+      border-radius: 3px;
+      border-left: 3px solid #ff6b6b;
+    }
+    
+    .debug-message.warning {
+      color: #ffd93d;
+      background: rgba(255, 217, 61, 0.1);
+      padding: 4px;
+      border-radius: 3px;
+      border-left: 3px solid #ffd93d;
+    }
+    
     .debug-timestamp {
       color: #888;
       font-size: 10px;
@@ -668,7 +875,14 @@ function _updateDebugDisplay() {
   if (!content) return;
   
   content.innerHTML = _debugMessages
-    .map(msg => `<div class="debug-message">${msg}</div>`)
+    .map(msg => {
+      // Handle both old string format and new object format
+      if (typeof msg === 'string') {
+        return `<div class="debug-message">${msg}</div>`;
+      } else {
+        return `<div class="debug-message ${msg.type}">${msg.text}</div>`;
+      }
+    })
     .join('');
   
   // Auto-scroll to bottom
