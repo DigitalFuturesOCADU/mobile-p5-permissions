@@ -21,8 +21,8 @@ A lightweight library that handles device permissions and gesture blocking for m
   - [lockGestures()](#lockgestures)
   - [Motion Sensor Activation](#motion-sensor-activation)
   - [Microphone Activation](#microphone-activation)
+  - [Combined Activation](#combined-activation-new-in-v143)
   - [Debug System](#debug-system)
-- [Mobile CSS Optimizations](#mobile-css-optimizations)
 - [Examples](#examples)
 - [Installation Options](#installation-options)
 - [Browser Compatibility](#browser-compatibility)
@@ -42,8 +42,11 @@ A lightweight library that handles device permissions and gesture blocking for m
 ### CDN (Recommended)
 
 ```html
-<!-- Complete mobile p5.js solution -->
-<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.1/src/permissionsAll.js"></script>
+<!-- Minified version (recommended) -->
+<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.2/dist/p5.mobile-permissions.min.js"></script>
+
+<!-- Development version (larger, with comments) -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.2/dist/p5.mobile-permissions.js"></script> -->
 ```
 
 ### Basic Setup
@@ -57,56 +60,12 @@ A lightweight library that handles device permissions and gesture blocking for m
   <title>Mobile p5.js App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.10/p5.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.1/src/permissionsAll.js"></script>
-  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.2/dist/p5.mobile-permissions.min.js"></script>
 </head>
 <body>
   <script src="sketch.js"></script>
 </body>
 </html>
-```
-
-#### CSS
-
-```css
-/* Mobile-optimized CSS for p5.js projects */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    -webkit-user-select: none;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-}
-
-html, body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    position: fixed;
-    touch-action: none;
-    background: #000;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-canvas {
-    display: block;
-    position: fixed;
-    left: 0;
-    top: 0;
-}
-
-::-webkit-scrollbar {
-    display: none;
-}
-
-body {
-    -webkit-overflow-scrolling: touch;
-    -webkit-text-size-adjust: 100%;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
 ```
 
 #### p5.js
@@ -121,11 +80,14 @@ function setup() {
   // Lock mobile gestures to prevent browser interference
   lockGestures();
   
-  // Enable motion sensors with tap-to-start
+  // Option 1: Enable motion sensors with tap-to-start
   enableGyroTap('Tap to enable motion sensors');
   
-  // Enable microphone with tap-to-start  
+  // Option 2: Enable microphone with tap-to-start  
   enableMicTap('Tap to enable microphone');
+  
+  // Option 3: Enable both with one tap (NEW in v1.4.3)
+  // enableAllTap('Tap to enable motion sensors & microphone');
 }
 
 function draw() {
@@ -155,6 +117,10 @@ enableGyroButton(text)    // Button-based sensor activation
 enableMicTap(message)     // Tap anywhere to enable microphone  
 enableMicButton(text)     // Button-based microphone activation
 
+// Combined activation (NEW in v1.4.3)
+enableAllTap(message)     // Tap anywhere to enable both sensors & microphone
+enableAllButton(text)     // Button-based activation for both sensors & microphone
+
 // Status variables (check these in your code)
 window.sensorsEnabled     // Boolean: true when motion sensors are active
 window.micEnabled         // Boolean: true when microphone is active
@@ -178,6 +144,10 @@ this.lockGestures();     // p5.js instance method
 // Both approaches work identically
 enableGyroTap('Tap to start');
 this.enableGyroTap('Tap to start');
+
+// New combined functions also support both syntaxes
+enableAllTap('Tap for all sensors');
+this.enableAllTap('Tap for all sensors');
 ```
 
 ### Status Variables
@@ -330,6 +300,65 @@ function draw() {
 }
 ```
 
+### Combined Activation (NEW in v1.4.3)
+
+**Purpose:** Enable both motion sensors and microphone together with a single user interaction. Perfect for projects that need both orientation data and audio input.
+
+**Commands:**
+- `enableAllTap(message)` - Tap anywhere on screen to enable both sensors and microphone
+- `enableAllButton(text, status)` - Creates a button to enable both with custom text
+
+**Usage:**
+```javascript
+// Tap-to-enable both (recommended)
+enableAllTap('Tap to enable motion sensors & microphone');
+
+// Button-based activation for both
+enableAllButton('ENABLE ALL SENSORS', 'Requesting permissions...');
+```
+
+**Benefits:**
+- **Single interaction** - User only needs to tap/click once instead of multiple times
+- **Better UX** - No confusing multiple permission prompts
+- **Simplified code** - One function call instead of two separate ones
+
+**Example:**
+```javascript
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  lockGestures();
+  
+  // Enable everything with one tap
+  enableAllTap('Tap to start motion & audio');
+}
+
+function draw() {
+  // Check both sensors are active
+  if (window.sensorsEnabled && window.micEnabled) {
+    background(0, 100, 0); // Green when both active
+    
+    // Motion-controlled position
+    let x = width/2 + rotationY * 3;
+    let y = height/2 + rotationX * 3;
+    
+    // Audio-controlled size
+    let level = mic.getLevel();
+    let size = map(level, 0, 1, 20, 100);
+    
+    // Combined visualization
+    fill(255);
+    circle(x, y, size);
+    
+    debug("Motion:", rotationX.toFixed(1), "Audio:", level.toFixed(3));
+  } else {
+    background(100, 0, 0); // Red when waiting
+    fill(255);
+    textAlign(CENTER, CENTER);
+    text('Tap to enable sensors', width/2, height/2);
+  }
+}
+```
+
 ### Debug System
 
 **Purpose:** Essential on-screen debugging system for mobile development where traditional browser dev tools aren't accessible. Provides automatic error catching, timestamped logging, and color-coded messages.
@@ -383,212 +412,6 @@ debug({rotation: rotationX, acceleration: accelerationX});
 ```
 
 
-## Mobile CSS Optimizations
-
-For optimal mobile performance and behavior, add these CSS rules to your project. These work alongside the JavaScript permissions to provide comprehensive mobile control:
-
-### Complete Mobile CSS Template
-
-```css
-/* ============================================
-   MOBILE P5.JS STYLES
-   Mobile-optimized CSS for p5.js projects
-   ============================================ */
-
-/* Reset all default styles and prepare for mobile */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    
-    /* Disable text selection on mobile */
-    -webkit-user-select: none;
-    user-select: none;
-    
-    /* Remove tap highlights and callouts */
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-}
-
-/* Full-screen mobile setup */
-html, body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    position: fixed;
-    
-    /* Disable all touch gestures that could interfere */
-    touch-action: none;
-    
-    /* Set default background and font */
-    background: #000;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-/* Position p5.js canvas */
-canvas {
-    display: block;
-    position: fixed;
-    left: 0;
-    top: 0;
-}
-
-/* Hide scrollbars completely on mobile */
-::-webkit-scrollbar {
-    display: none;
-}
-
-/* Additional mobile optimizations */
-body {
-    /* Prevent iOS bounce effect */
-    -webkit-overflow-scrolling: touch;
-    
-    /* Prevent zoom on inputs (if you add any) */
-    -webkit-text-size-adjust: 100%;
-    
-    /* Smooth font rendering */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-```
-
-### What Each CSS Rule Does
-
-| CSS Property | Purpose | Effect |
-|--------------|---------|---------|
-| `touch-action: none` | **Disable all touch gestures** | Prevents pinch-zoom, swipe-refresh, pan scrolling |
-| `-webkit-user-select: none` | **Disable text selection** | Prevents text highlighting on touch and hold |
-| `-webkit-tap-highlight-color: transparent` | **Remove tap highlights** | Removes blue highlight when tapping elements |
-| `-webkit-touch-callout: none` | **Disable callout menus** | Prevents copy/paste menu on long press |
-| `overflow: hidden` | **Hide scrollbars** | Prevents scrolling and scrollbar appearance |
-| `position: fixed` | **Lock viewport** | Prevents address bar hiding/showing behavior |
-| `-webkit-text-size-adjust: 100%` | **Prevent zoom on inputs** | Stops auto-zoom when focusing form elements |
-
-### CSS vs JavaScript Controls
-
-**CSS handles:**
-- UI/UX optimizations (highlights, selection, scrollbars)
-- System-level behaviors (bounce effects, text adjustment)
-- Immediate application (no permission requests)
-
-**JavaScript handles:**
-- Dynamic gesture control and sensor permissions
-- Event-specific blocking and conditional interactions
-- Device motion/orientation access
-
-**Best practice:** Use both together for complete mobile optimization.
-
-### Complete HTML Template
-
-Here's a ready-to-use HTML template that combines everything - copy this into your `index.html` file:
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobile p5.js App</title>
-    
-    <!-- Load p5.js library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.10/p5.min.js"></script>
-    
-    <!-- Load mobile permissions library -->
-    <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.1/src/permissionsAll.js"></script>
-    
-    <!-- Mobile-optimized styles -->
-    <style>
-        /* Reset and mobile optimizations */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-user-select: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-        }
-        
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            position: fixed;
-            touch-action: none;
-            background: #000;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-        
-        canvas {
-            display: block;
-            position: fixed;
-            left: 0;
-            top: 0;
-        }
-        
-        ::-webkit-scrollbar { display: none; }
-        
-        body {
-            -webkit-overflow-scrolling: touch;
-            -webkit-text-size-adjust: 100%;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-    </style>
-</head>
-<body>
-    <script>
-        function setup() {
-            // Show debug panel FIRST to catch setup errors
-            showDebug();
-            
-            // Create full-screen canvas
-            createCanvas(windowWidth, windowHeight);
-            
-            // Lock mobile gestures
-            lockGestures();
-            
-            // Enable motion sensors with tap
-            enableGyroTap('Tap to enable motion sensors');
-            
-            debug("Mobile p5.js app started!");
-        }
-        
-        function draw() {
-            background(50);
-            
-            // Your creative code here
-            fill(255);
-            ellipse(mouseX, mouseY, 50, 50);
-            
-            // Show motion data if available
-            if (rotationX) {
-                debug("Rotation:", rotationX.toFixed(2), rotationY.toFixed(2));
-            }
-        }
-        
-        function touchStarted() {
-            debug("Touch at:", touchX, touchY);
-            return false; // Prevent default
-        }
-        
-        function windowResized() {
-            resizeCanvas(windowWidth, windowHeight);
-        }
-    </script>
-</body>
-</html>
-```
-
-This template includes:
-- ✅ **Latest p5.js** (v1.11.10) from CDN
-- ✅ **Mobile permissions library** from CDN  
-- ✅ **Complete mobile CSS** inline for easy copying
-- ✅ **Basic p5.js setup** with debug system
-- ✅ **Motion sensor activation** with tap-to-start
-- ✅ **Touch handling** and responsive canvas
-- ✅ **Ready to run** - just save as `index.html` and open!
-
 ## Examples
 
 ### [Interactive Examples and Demos](https://digitalfuturesocadu.github.io/mobile-p5-permissions/)
@@ -609,7 +432,11 @@ Each example includes QR codes for easy mobile testing and demonstrates both tra
 
 ### CDN (Recommended)
 ```html
-<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.1/src/permissionsAll.js"></script>
+<!-- Minified version (recommended) -->
+<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.2/dist/p5.mobile-permissions.min.js"></script>
+
+<!-- Development version -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.2/dist/p5.mobile-permissions.js"></script> -->
 ```
 
 ### npm

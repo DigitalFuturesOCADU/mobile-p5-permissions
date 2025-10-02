@@ -1,5 +1,5 @@
 /*!
- * mobile-p5-permissions v1.4.1
+ * mobile-p5-permissions v1.4.3
  * Easy-to-use permission handling and gesture blocking for mobile p5.js projects
  * https://github.com/DigitalFuturesOCADU/mobile-p5-permissions
  * 
@@ -151,6 +151,30 @@ function enableMicTap(message = 'Tap screen to enable microphone') {
   });
 }
 
+/**
+ * Enable both motion sensors and microphone with a button interface
+ * Creates a start button that user must click to enable both
+ */
+function enableAllButton(buttonText = 'ENABLE MOTION & MICROPHONE', statusText = 'Requesting permissions...') {
+  _createPermissionButton(buttonText, statusText, async () => {
+    await _requestMotionPermissions();
+    await _requestMicrophonePermissions();
+    console.log('✅ Motion sensors and microphone enabled via button');
+  });
+}
+
+/**
+ * Enable both motion sensors and microphone with tap-to-start
+ * User taps anywhere on screen to enable both
+ */
+function enableAllTap(message = 'Tap screen to enable motion sensors & microphone') {
+  _createTapToEnable(message, async () => {
+    await _requestMotionPermissions();
+    await _requestMicrophonePermissions();
+    console.log('✅ Motion sensors and microphone enabled via tap');
+  });
+}
+
 // =========================================
 // INTERNAL PERMISSION HANDLERS
 // =========================================
@@ -253,10 +277,11 @@ function _createPermissionButton(buttonText, statusText, onClickHandler) {
     border: none;
     border-radius: 12px;
     cursor: pointer;
-    z-index: 10000;
+    z-index: 999999;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     transition: transform 0.2s ease;
+    touch-action: manipulation;
   `;
   
   // Create status text
@@ -271,7 +296,7 @@ function _createPermissionButton(buttonText, statusText, onClickHandler) {
     color: white;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     text-align: center;
-    z-index: 9999;
+    z-index: 999998;
     display: none;
   `;
   
@@ -284,15 +309,30 @@ function _createPermissionButton(buttonText, statusText, onClickHandler) {
     button.style.transform = 'translate(-50%, -50%) scale(1)';
   });
   
-  // Add click handler
-  button.addEventListener('click', async () => {
-    button.style.display = 'none';
-    status.style.display = 'block';
-    
-    await onClickHandler();
-    
-    status.style.display = 'none';
-    _removeExistingUI();
+  // Add multiple event handlers to ensure responsiveness
+  const handleButtonClick = async () => {
+    if (button.parentNode) {
+      button.style.display = 'none';
+      status.style.display = 'block';
+      
+      await onClickHandler();
+      
+      status.style.display = 'none';
+      _removeExistingUI();
+    }
+  };
+  
+  // Add click, touch, and pointer handlers
+  button.addEventListener('click', handleButtonClick);
+  button.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    handleButtonClick();
+  });
+  button.addEventListener('pointerup', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    handleButtonClick();
   });
   
   document.body.appendChild(button);
@@ -316,8 +356,9 @@ function _createTapToEnable(message, onTapHandler) {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10000;
+    z-index: 999999;
     cursor: pointer;
+    touch-action: manipulation;
   `;
   
   // Create message
@@ -337,11 +378,30 @@ function _createTapToEnable(message, onTapHandler) {
   
   overlay.appendChild(messageDiv);
   
-  // Add tap handler
-  overlay.addEventListener('click', async () => {
-    messageDiv.textContent = 'Enabling...';
-    await onTapHandler();
-    document.body.removeChild(overlay);
+  // Add multiple event handlers to ensure responsiveness
+  const handleActivation = async () => {
+    if (overlay.parentNode) {
+      messageDiv.textContent = 'Enabling...';
+      await onTapHandler();
+      if (overlay.parentNode) {
+        document.body.removeChild(overlay);
+      }
+    }
+  };
+  
+  // Add both click and touch handlers
+  overlay.addEventListener('click', handleActivation);
+  overlay.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    handleActivation();
+  });
+  
+  // Also add pointer events for wider compatibility
+  overlay.addEventListener('pointerup', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    handleActivation();
   });
   
   document.body.appendChild(overlay);
@@ -416,8 +476,10 @@ function _initializeEdgeSwipePrevention() {
       e.preventDefault();
     }
     
-    // Always prevent on canvas
-    if (e.target && e.target.tagName === 'CANVAS') {
+    // Prevent canvas touches but not on permission UI
+    if (e.target && e.target.tagName === 'CANVAS' && 
+        !document.getElementById('tapOverlay') && 
+        !document.getElementById('permissionButton')) {
       e.preventDefault();
     }
   }, { passive: false, capture: true });
@@ -440,6 +502,18 @@ function _initializeOtherGesturePrevention() {
   // Prevent double-tap zoom
   let lastTouchEnd = 0;
   document.addEventListener('touchend', function(e) {
+    // Don't prevent clicks on permission UI elements
+    if (e.target && (
+        e.target.id === 'tapOverlay' || 
+        e.target.closest('#tapOverlay') || 
+        e.target.id === 'permissionButton' ||
+        e.target.id === 'permissionStatus' ||
+        e.target.closest('#permissionButton') ||
+        e.target.closest('#permissionStatus')
+    )) {
+      return; // Allow clicks on permission UI
+    }
+    
     const now = Date.now();
     if (now - lastTouchEnd <= 300) {
       e.preventDefault();
@@ -707,6 +781,15 @@ window.showDebug = showDebug;
 window.hideDebug = hideDebug;
 window.toggleDebug = toggleDebug;
 
+// Make permission functions globally accessible
+window.lockGestures = lockGestures;
+window.enableGyroTap = enableGyroTap;
+window.enableGyroButton = enableGyroButton;
+window.enableMicTap = enableMicTap;
+window.enableMicButton = enableMicButton;
+window.enableAllTap = enableAllTap;
+window.enableAllButton = enableAllButton;
+
 /**
  * Set up console overrides to capture console.error and console.warn
  */
@@ -914,6 +997,8 @@ if (typeof p5 !== 'undefined' && p5.prototype) {
   p5.prototype.enableGyroButton = enableGyroButton;
   p5.prototype.enableMicTap = enableMicTap;
   p5.prototype.enableMicButton = enableMicButton;
+  p5.prototype.enableAllTap = enableAllTap;
+  p5.prototype.enableAllButton = enableAllButton;
   
   // Debug functions
   p5.prototype.showDebug = showDebug;
