@@ -1,12 +1,6 @@
 # Mobile p5.js Permissions
 
-[![CI](https://```html
-<!-- Complete mobile p5.js solution (minified) -->
-<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.0/dist/p5.mobile-permissions.min.js"></script>
-
-<!-- Or development version (unminified) -->
-<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.0/dist/p5.mobile-permissions.js"></script>
-```com/DigitalFuturesOCADU/mobile-p5-permissions/workflows/CI/badge.svg)](https://github.com/DigitalFuturesOCADU/mobile-p5-permissions/actions)
+[![CI](https://github.com/DigitalFuturesOCADU/mobile-p5-permissions/workflows/CI/badge.svg)](https://github.com/DigitalFuturesOCADU/mobile-p5-permissions/actions)
 [![npm version](https://badge.fury.io/js/mobile-p5-permissions.svg)](https://badge.fury.io/js/mobile-p5-permissions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub Pages](https://img.shields.io/badge/Demo-Live%20Examples-blue)](https://digitalfuturesocadu.github.io/mobile-p5-permissions/)
