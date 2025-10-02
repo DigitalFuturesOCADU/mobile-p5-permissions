@@ -1,5 +1,5 @@
 /*!
- * mobile-p5-permissions v1.4.0
+ * mobile-p5-permissions v1.4.1
  * Easy-to-use permission handling and gesture blocking for mobile p5.js projects
  * https://github.com/DigitalFuturesOCADU/mobile-p5-permissions
  * 
