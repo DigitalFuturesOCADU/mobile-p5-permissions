@@ -42,11 +42,11 @@ A lightweight library that handles device permissions and gesture blocking for m
 ### CDN (Recommended)
 
 ```html
-<!-- Complete mobile p5.js solution (minified) -->
-<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.0/dist/p5.mobile-permissions.min.js"></script>
+<!-- Complete mobile p5.js solution -->
+<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.1/src/permissionsAll.js"></script>
 
-<!-- Or development version (unminified) -->
-<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.0/dist/p5.mobile-permissions.js"></script>
+<!-- Note: Minified version coming soon to CDN -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.1/dist/p5.mobile-permissions.min.js"></script> -->
 ```
 
 ### Basic Setup
@@ -60,7 +60,7 @@ A lightweight library that handles device permissions and gesture blocking for m
   <title>Mobile p5.js App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.10/p5.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.0/dist/p5.mobile-permissions.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.1/dist/p5.mobile-permissions.min.js"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -497,7 +497,7 @@ Here's a ready-to-use HTML template that combines everything - copy this into yo
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.10/p5.min.js"></script>
     
     <!-- Load mobile permissions library -->
-    <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.0/dist/p5.mobile-permissions.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.1/dist/p5.mobile-permissions.min.js"></script>
     
     <!-- Mobile-optimized styles -->
     <style>
@@ -612,7 +612,7 @@ Each example includes QR codes for easy mobile testing and demonstrates both tra
 
 ### CDN (Recommended)
 ```html
-<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.0/dist/p5.mobile-permissions.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.1/dist/p5.mobile-permissions.min.js"></script>
 ```
 
 ### npm
