@@ -13,8 +13,8 @@
   "scripts": {
     "build": "npx terser src/permissionsAll.js --compress --mangle --output dist/p5.mobile-permissions.min.js && cp src/permissionsAll.js dist/p5.mobile-permissions.js",
     "test": "echo \"No tests specified\" && exit 0",
-    "prepublishOnly": "npm test",
-    "prepare": "echo \"Package prepared for publishing\"",
+    "prepublishOnly": "npm run build",
+    "prepare": "npm run build",
     "version": "echo \"Version bumped to $npm_package_version\"",
     "postversion": "git push && git push --tags",
     "release:patch": "npm version patch",
