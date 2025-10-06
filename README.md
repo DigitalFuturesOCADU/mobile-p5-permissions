@@ -44,10 +44,10 @@ This page provides a link to live examples as well as the code on github
 
 ```html
 <!-- Minified version (recommended) -->
-<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.2/dist/p5.mobile-permissions.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.4/dist/p5.mobile-permissions.min.js"></script>
 
 <!-- Development version (larger, with comments) -->
-<!-- <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.2/dist/p5.mobile-permissions.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.4/dist/p5.mobile-permissions.js"></script> -->
 ```
 
 ### Basic Setup
@@ -75,7 +75,7 @@ This page provides a link to live examples as well as the code on github
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.10/p5.min.js"></script>
   
   <!-- Load the mobile p5.js permissions library -->
-  <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.2/dist/p5.mobile-permissions.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.4/dist/p5.mobile-permissions.min.js"></script>
   
 </head>
 <body>
@@ -88,6 +88,14 @@ This page provides a link to live examples as well as the code on github
 #### p5.js
 
 ```javascript
+let mic;
+let mySound;
+
+function preload() {
+  // Load sound file if needed
+  // mySound = loadSound('assets/sound.mp3');
+}
+
 function setup() {
   // Show debug panel FIRST to catch setup errors
   showDebug();
@@ -100,17 +108,34 @@ function setup() {
   // Enable motion sensors with tap-to-start
   enableGyroTap('Tap to enable motion sensors');
   
-  // Enable microphone with tap-to-start  
+  // Enable microphone with tap-to-start (also enables sound output)
+  mic = new p5.AudioIn();
   enableMicTap('Tap to enable microphone');
+  
+  // OR enable sound output only (no microphone input)
+  // enableSoundTap('Tap to enable sound');
 }
 
 function draw() {
   background(220);
   
+  // Always check status before using hardware features
   if (window.sensorsEnabled) {
     // Use device rotation and acceleration
     fill(255, 0, 0);
     circle(width/2 + rotationY * 5, height/2 + rotationX * 5, 50);
+  }
+  
+  if (window.micEnabled) {
+    // Use microphone input
+    let level = mic.getLevel();
+    fill(0, 255, 0);
+    rect(10, 10, level * 200, 20);
+  }
+  
+  if (window.soundEnabled) {
+    // Safe to play sounds
+    // mySound.play();
   }
 }
 
