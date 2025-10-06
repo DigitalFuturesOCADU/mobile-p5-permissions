@@ -1,6 +1,6 @@
 {
   "name": "mobile-p5-permissions",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "Easy-to-use permission handling and gesture blocking for mobile p5.js projects",
   "main": "src/permissionsAll.js",
   "files": [
