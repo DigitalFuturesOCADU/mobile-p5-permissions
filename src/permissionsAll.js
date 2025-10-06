@@ -83,6 +83,7 @@
 // Global state flags
 window.sensorsEnabled = false;
 window.micEnabled = false;
+window.soundEnabled = false;
 window.gesturesLocked = false;
 
 // Internal state
@@ -148,6 +149,30 @@ function enableMicTap(message = 'Tap screen to enable microphone') {
   _createTapToEnable(message, async () => {
     await _requestMicrophonePermissions();
     console.log('✅ Microphone enabled via tap');
+  });
+}
+
+/**
+ * Enable sound output with a button interface
+ * Creates a start button that user must click
+ * Use this for playing sounds without needing microphone input
+ */
+function enableSoundButton(buttonText = 'ENABLE SOUND', statusText = 'Enabling audio...') {
+  _createPermissionButton(buttonText, statusText, async () => {
+    await _requestSoundOutput();
+    console.log('✅ Sound output enabled via button');
+  });
+}
+
+/**
+ * Enable sound output with tap-to-start
+ * User taps anywhere on screen to enable
+ * Use this for playing sounds without needing microphone input
+ */
+function enableSoundTap(message = 'Tap screen to enable sound') {
+  _createTapToEnable(message, async () => {
+    await _requestSoundOutput();
+    console.log('✅ Sound output enabled via tap');
   });
 }
 
@@ -236,6 +261,26 @@ async function _requestMicrophonePermissions() {
   }
 }
 
+async function _requestSoundOutput() {
+  try {
+    // Start audio context for p5.sound (enables sound playback)
+    if (typeof userStartAudio !== 'undefined') {
+      await userStartAudio();
+    }
+    
+    window.soundEnabled = true;
+    _notifySketchReady();
+    
+  } catch (error) {
+    console.error('Sound output error:', error);
+    if (_debugVisible) {
+      debugError('Sound output error:', error);
+    }
+    window.soundEnabled = true; // Enable anyway since no permission needed
+    _notifySketchReady();
+  }
+}
+
 function _notifySketchReady() {
   // Call userSetupComplete if it exists
   if (typeof userSetupComplete === 'function') {
@@ -247,6 +292,7 @@ function _notifySketchReady() {
     detail: {
       sensors: window.sensorsEnabled,
       microphone: window.micEnabled,
+      sound: window.soundEnabled,
       gestures: window.gesturesLocked
     }
   }));
@@ -787,6 +833,8 @@ window.enableGyroTap = enableGyroTap;
 window.enableGyroButton = enableGyroButton;
 window.enableMicTap = enableMicTap;
 window.enableMicButton = enableMicButton;
+window.enableSoundTap = enableSoundTap;
+window.enableSoundButton = enableSoundButton;
 window.enableAllTap = enableAllTap;
 window.enableAllButton = enableAllButton;
 
@@ -997,6 +1045,8 @@ if (typeof p5 !== 'undefined' && p5.prototype) {
   p5.prototype.enableGyroButton = enableGyroButton;
   p5.prototype.enableMicTap = enableMicTap;
   p5.prototype.enableMicButton = enableMicButton;
+  p5.prototype.enableSoundTap = enableSoundTap;
+  p5.prototype.enableSoundButton = enableSoundButton;
   p5.prototype.enableAllTap = enableAllTap;
   p5.prototype.enableAllButton = enableAllButton;
   

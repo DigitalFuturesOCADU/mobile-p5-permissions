@@ -1,43 +1,44 @@
-# Mobile p5.js Permissions
+# P5.js on Mobile
 
 [![CI](https://github.com/DigitalFuturesOCADU/mobile-p5-permissions/workflows/CI/badge.svg)](https://github.com/DigitalFuturesOCADU/mobile-p5-permissions/actions)
 [![npm version](https://badge.fury.io/js/mobile-p5-permissions.svg)](https://badge.fury.io/js/mobile-p5-permissions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub Pages](https://img.shields.io/badge/Demo-Live%20Examples-blue)](https://digitalfuturesocadu.github.io/mobile-p5-permissions/)
 
-**Easy-to-use permission handling for mobile p5.js projects**
+# Overview
+P5.js on mobile provides unique opportunities and challenges. This page outlines the methods for using the P5 Mobile permissions library that
+- Simplifies accessing phone hardware from the browser (accelerometers, gyroscopes, microphone)
+- Simplifies disabling default phone gestures (Zoom, refresh, back, etc)
+- Simplifies using an on-screen console to display errors and debug info
 
-A lightweight library that handles device permissions and gesture blocking for mobile web applications built with p5.js. It simplifies the management of iOS permission requests, Android compatibility issues, or unwanted browser gestures.
+
+##  [Link for Interactive Examples](https://digitalfuturesocadu.github.io/P5-Phone-Interactions/examples/homepage)
+This page provides a link to live examples as well as the code on github
+
+## Browser Compatibility
+
+- iOS 13+ (Safari)
+- Android 7+ (Chrome)
+- Chrome 80+
+- Safari 13+
+- Firefox 75+
 
 ## Table of Contents
 
-- [Features](#features)
-- [Quick Start](#quick-start)
-  - [CDN (Recommended)](#cdn-recommended)
-  - [Basic Setup](#basic-setup)
+- [Link for Interactive Examples](#link-for-interactive-examples)
+- [Browser Compatibility](#browser-compatibility)
+- [CDN (Recommended)](#cdn-recommended)
+- [Basic Setup](#basic-setup)
+  - [Index HTML](#index-html)
+  - [p5.js](#p5js)
 - [API Reference](#api-reference)
   - [Core Functions](#core-functions)
   - [Status Variables](#status-variables)
   - [lockGestures()](#lockgestures)
   - [Motion Sensor Activation](#motion-sensor-activation)
   - [Microphone Activation](#microphone-activation)
-  - [Combined Activation](#combined-activation-new-in-v143)
+  - [Sound Output Activation](#sound-output-activation)
   - [Debug System](#debug-system)
-- [Examples](#examples)
-- [Installation Options](#installation-options)
-- [Browser Compatibility](#browser-compatibility)
-- [About](#about)
-- [License](#license)
-
-## Features
-
-- Cross-platform compatibility - Works on iOS and Android
-- Comprehensive gesture blocking - Prevents unwanted mobile browser behaviors
-- Simple implemtation in P5
-- On-screen debug system with timestamps
-- Interactive examples and demos
-
-## Quick Start
 
 ### CDN (Recommended)
 
@@ -55,14 +56,30 @@ A lightweight library that handles device permissions and gesture blocking for m
 
 ```html
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Mobile p5.js App</title>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile p5.js App</title>
+  
+  <!-- Basic CSS to remove browser defaults and align canvas -->
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+  </style>
+  
+  <!-- Load p5.js library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.10/p5.min.js"></script>
+  
+  <!-- Load the mobile p5.js permissions library -->
   <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.2/dist/p5.mobile-permissions.min.js"></script>
+  
 </head>
 <body>
+  <!-- Load the p5.js sketch -->
   <script src="sketch.js"></script>
 </body>
 </html>
@@ -80,14 +97,11 @@ function setup() {
   // Lock mobile gestures to prevent browser interference
   lockGestures();
   
-  // Option 1: Enable motion sensors with tap-to-start
+  // Enable motion sensors with tap-to-start
   enableGyroTap('Tap to enable motion sensors');
   
-  // Option 2: Enable microphone with tap-to-start  
+  // Enable microphone with tap-to-start  
   enableMicTap('Tap to enable microphone');
-  
-  // Option 3: Enable both with one tap (NEW in v1.4.3)
-  // enableAllTap('Tap to enable motion sensors & microphone');
 }
 
 function draw() {
@@ -98,6 +112,15 @@ function draw() {
     fill(255, 0, 0);
     circle(width/2 + rotationY * 5, height/2 + rotationX * 5, 50);
   }
+}
+
+// Prevent default touch behavior (optional but recommended)
+function touchStarted() {
+  return false;
+}
+
+function touchEnded() {
+  return false;
 }
 ```
 
@@ -117,13 +140,14 @@ enableGyroButton(text)    // Button-based sensor activation
 enableMicTap(message)     // Tap anywhere to enable microphone  
 enableMicButton(text)     // Button-based microphone activation
 
-// Combined activation (NEW in v1.4.3)
-enableAllTap(message)     // Tap anywhere to enable both sensors & microphone
-enableAllButton(text)     // Button-based activation for both sensors & microphone
+// Sound output activation (no microphone input)
+enableSoundTap(message)   // Tap anywhere to enable sound playback
+enableSoundButton(text)   // Button-based sound activation
 
 // Status variables (check these in your code)
 window.sensorsEnabled     // Boolean: true when motion sensors are active
 window.micEnabled         // Boolean: true when microphone is active
+window.soundEnabled       // Boolean: true when sound output is active
 
 // Debug system (enhanced in v1.4.0)
 showDebug()       // Show on-screen debug panel with automatic error catching
@@ -135,7 +159,7 @@ debugWarn(...args)  // Display warnings with yellow styling
 debug.clear()     // Clear debug messages
 ```
 
-**📋 p5.js Namespace Support**: All functions are also available as `p5.prototype` methods:
+**p5.js Namespace Support**: All functions are also available as `p5.prototype` methods:
 ```javascript
 // You can use either syntax:
 lockGestures();          // Global function (recommended)
@@ -144,10 +168,6 @@ this.lockGestures();     // p5.js instance method
 // Both approaches work identically
 enableGyroTap('Tap to start');
 this.enableGyroTap('Tap to start');
-
-// New combined functions also support both syntaxes
-enableAllTap('Tap for all sensors');
-this.enableAllTap('Tap for all sensors');
 ```
 
 ### Status Variables
@@ -157,6 +177,7 @@ this.enableAllTap('Tap for all sensors');
 **Variables:**
 - `window.sensorsEnabled` - Boolean indicating if motion sensors are active
 - `window.micEnabled` - Boolean indicating if microphone is active
+- `window.soundEnabled` - Boolean indicating if sound output is active
 
 **Usage:**
 ```javascript
@@ -170,6 +191,11 @@ function draw() {
   if (window.micEnabled) {
     // Safe to use microphone
     let audioLevel = mic.getLevel();
+  }
+  
+  if (window.soundEnabled) {
+    // Safe to play sounds
+    mySound.play();
   }
 }
 
@@ -226,16 +252,16 @@ enableGyroButton('Enable Motion');
 
 | Variable | Description | Range/Units |
 |----------|-------------|-------------|
-| `rotationX` | Device tilt forward/backward | -180° to 180° |
-| `rotationY` | Device tilt left/right | -180° to 180° |
-| `rotationZ` | Device rotation around screen | -180° to 180° |
-| `accelerationX` | Acceleration left/right | m/s² |
-| `accelerationY` | Acceleration up/down | m/s² |
-| `accelerationZ` | Acceleration forward/back | m/s² |
-| `deviceShaken` | Shake detection event | true when shaken |
-| `deviceMoved` | Movement detection event | true when moved |
+| [`rotationX`](https://p5js.org/reference/p5/rotationX/) | Device tilt forward/backward | -180° to 180° |
+| [`rotationY`](https://p5js.org/reference/p5/rotationY/) | Device tilt left/right | -180° to 180° |
+| [`rotationZ`](https://p5js.org/reference/p5/rotationZ/) | Device rotation around screen | -180° to 180° |
+| [`accelerationX`](https://p5js.org/reference/p5/accelerationX/) | Acceleration left/right | m/s² |
+| [`accelerationY`](https://p5js.org/reference/p5/accelerationY/) | Acceleration up/down | m/s² |
+| [`accelerationZ`](https://p5js.org/reference/p5/accelerationZ/) | Acceleration forward/back | m/s² |
+| [`deviceShaken`](https://p5js.org/reference/p5/deviceShaken/) | Shake detection event | true when shaken |
+| [`deviceMoved`](https://p5js.org/reference/p5/deviceMoved/) | Movement detection event | true when moved |
 
-**⚠️ Important:** All motion sensor variables, including `deviceShaken` and `deviceMoved`, are only available when `window.sensorsEnabled` is true. Always check this status before using any motion data.
+**Important:** All motion sensor variables, including `deviceShaken` and `deviceMoved`, are only available when `window.sensorsEnabled` is true. Always check this status before using any motion data.
 
 **Example:**
 ```javascript
@@ -267,6 +293,11 @@ function draw() {
 
 **Purpose:** Enable device microphone with user permission handling for audio-reactive applications.
 
+**Important:** Microphone examples require the p5.sound library. Add this script tag to your HTML:
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/addons/p5.sound.min.js"></script>
+```
+
 **Commands:**
 - `enableMicTap(message)` - Tap anywhere on screen to enable microphone
 - `enableMicButton(text)` - Creates a button with custom text to enable microphone
@@ -284,12 +315,26 @@ enableMicButton('Enable Audio');
 
 | Variable | Description | Range |
 |----------|-------------|-------|
-| `mic.getLevel()` | Current audio input level | 0.0 to 1.0 |
+| [`p5.AudioIn()`](https://p5js.org/reference/p5.sound/p5.AudioIn/) | Audio input object (stored in `mic`) | Object |
+| [`mic.getLevel()`](https://p5js.org/reference/p5.sound/p5.AudioIn/getLevel/) | Current audio input level | 0.0 to 1.0 |
 
 **Example:**
 ```javascript
+let mic;
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  
+  // Create a new p5.AudioIn() instance
+  mic = new p5.AudioIn();
+  
+  // Enable microphone with tap
+  enableMicTap();
+}
+
 function draw() {
   if (window.micEnabled) {
+    // The mic object is a p5.AudioIn() instance
     // Audio-reactive visualization
     let level = mic.getLevel();
     let size = map(level, 0, 1, 10, 200);
@@ -300,61 +345,63 @@ function draw() {
 }
 ```
 
-### Combined Activation (NEW in v1.4.3)
+### Sound Output Activation
 
-**Purpose:** Enable both motion sensors and microphone together with a single user interaction. Perfect for projects that need both orientation data and audio input.
+**Purpose:** Enable audio playback without requiring microphone input. Perfect for playing sounds, music, synthesizers, and audio effects in mobile browsers.
+
+**Important:** Sound examples require the p5.sound library. Add this script tag to your HTML:
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/addons/p5.sound.min.js"></script>
+```
 
 **Commands:**
-- `enableAllTap(message)` - Tap anywhere on screen to enable both sensors and microphone
-- `enableAllButton(text, status)` - Creates a button to enable both with custom text
+- `enableSoundTap(message)` - Tap anywhere on screen to enable sound playback
+- `enableSoundButton(text)` - Creates a button with custom text to enable sound
 
 **Usage:**
 ```javascript
-// Tap-to-enable both (recommended)
-enableAllTap('Tap to enable motion sensors & microphone');
+// Tap-to-enable (recommended)
+enableSoundTap('Tap to enable sound');
 
-// Button-based activation for both
-enableAllButton('ENABLE ALL SENSORS', 'Requesting permissions...');
+// Button-based activation
+enableSoundButton('Enable Sound');
 ```
 
-**Benefits:**
-- **Single interaction** - User only needs to tap/click once instead of multiple times
-- **Better UX** - No confusing multiple permission prompts
-- **Simplified code** - One function call instead of two separate ones
+**When to use Sound vs. Microphone:**
+- Use `enableSound` for: Playing audio files, synthesizers, oscillators, sound effects
+- Use `enableMic` for: Recording audio, audio-reactive visualizations, voice input
+- Note: `enableMic` also enables sound output, so you don't need both
 
 **Example:**
 ```javascript
+let mySound;
+
+function preload() {
+  // Load audio file
+  mySound = loadSound('assets/sound.mp3');
+}
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  lockGestures();
   
-  // Enable everything with one tap
-  enableAllTap('Tap to start motion & audio');
+  // Enable sound playback with tap
+  enableSoundTap('Tap to enable sound');
 }
 
 function draw() {
-  // Check both sensors are active
-  if (window.sensorsEnabled && window.micEnabled) {
-    background(0, 100, 0); // Green when both active
-    
-    // Motion-controlled position
-    let x = width/2 + rotationY * 3;
-    let y = height/2 + rotationX * 3;
-    
-    // Audio-controlled size
-    let level = mic.getLevel();
-    let size = map(level, 0, 1, 20, 100);
-    
-    // Combined visualization
-    fill(255);
-    circle(x, y, size);
-    
-    debug("Motion:", rotationX.toFixed(1), "Audio:", level.toFixed(3));
+  background(220);
+  
+  if (window.soundEnabled) {
+    text('Tap anywhere to play sound', 20, 20);
   } else {
-    background(100, 0, 0); // Red when waiting
-    fill(255);
-    textAlign(CENTER, CENTER);
-    text('Tap to enable sensors', width/2, height/2);
+    text('Waiting for sound activation...', 20, 20);
+  }
+}
+
+function mousePressed() {
+  // Check if sound is enabled before playing
+  if (window.soundEnabled && !mySound.isPlaying()) {
+    mySound.play();
   }
 }
 ```
@@ -411,55 +458,4 @@ debug("Touch points:", touches);
 debug({rotation: rotationX, acceleration: accelerationX});
 ```
 
-
-## Examples
-
-### [Interactive Examples and Demos](https://digitalfuturesocadu.github.io/mobile-p5-permissions/)
-
-Explore our comprehensive collection of examples demonstrating mobile interaction patterns:
-
-**UX Comparison Examples:**
-- Button Examples - Compare traditional buttons vs device capabilities (shake detection, movement, orientation)
-- Slider Examples - Compare traditional sliders vs mobile interactions (rotation, acceleration, microphone, multi-touch, distance, angle)
-
-**Other Demos:**
-- Microphone Demo - Audio visualization using device microphone
-- Gyroscope Demo - Tilt-based game using motion sensors
-
-Each example includes QR codes for easy mobile testing and demonstrates both traditional UI patterns and mobile-specific interactions.
-
-## Installation Options
-
-### CDN (Recommended)
-```html
-<!-- Minified version (recommended) -->
-<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.2/dist/p5.mobile-permissions.min.js"></script>
-
-<!-- Development version -->
-<!-- <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.2/dist/p5.mobile-permissions.js"></script> -->
-```
-
-### npm
-```bash
-npm install mobile-p5-permissions
-```
-
-### Download
-Download from [GitHub Releases](https://github.com/DigitalFuturesOCADU/mobile-p5-permissions/releases)
-
-## Browser Compatibility
-
-- iOS 13+ (Safari)
-- Android 7+ (Chrome)
-- Chrome 80+
-- Safari 13+
-- Firefox 75+
-
-## About
-
-This library was created by Nick Puckett [https://github.com/npuckett](https://github.com/npuckett).
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
