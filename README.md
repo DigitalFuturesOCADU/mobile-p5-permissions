@@ -1,19 +1,42 @@
-# P5.js on Mobile
+# p5-phone
+![P5Phone.png](P5Phone.png)
 
-[![CI](https://github.com/DigitalFuturesOCADU/mobile-p5-permissions/workflows/CI/badge.svg)](https://github.com/DigitalFuturesOCADU/mobile-p5-permissions/actions)
-[![npm version](https://badge.fury.io/js/mobile-p5-permissions.svg)](https://badge.fury.io/js/mobile-p5-permissions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub Pages](https://img.shields.io/badge/Demo-Live%20Examples-blue)](https://digitalfuturesocadu.github.io/mobile-p5-permissions/)
-
-# Overview
-P5.js on mobile provides unique opportunities and challenges. This page outlines the methods for using the P5 Mobile permissions library that
-- Simplifies accessing phone hardware from the browser (accelerometers, gyroscopes, microphone)
-- Simplifies disabling default phone gestures (Zoom, refresh, back, etc)
-- Simplifies using an on-screen console to display errors and debug info
-
+**Simplified mobile hardware access for p5.js** - handle sensors, microphone, touch, and browser gestures with ease.
 
 ##  [Link for Interactive Examples](https://digitalfuturesocadu.github.io/P5-Phone-Interactions/examples/homepage)
-This page provides a link to live examples as well as the code on github
+
+# Overview
+P5.js on mobile provides unique opportunities and challenges. The main P5 framework does an excellent job of making it easy to read data from various phone inputs and sensors, however it doesn't deal with the realities of contemporary browser's built in gestures and security protocols.
+That's where this library comes in:
+
+- Simplifies accessing phone hardware from the browser (accelerometers, gyroscopes, microphone)
+- Simplifies disabling default phone gestures (Zoom, refresh, back, etc)
+- Simplifies enabling audio output
+- Simplifies using an on-screen console to display errors and debug info
+
+## p5 commands
+
+This library simplifies access to the following p5.js mobile sensor and audio commands:
+
+**Touch Events:**
+- [`touchStarted()`](https://p5js.org/reference/p5/touchStarted/) - Called when a touch begins
+- [`touchEnded()`](https://p5js.org/reference/p5/touchEnded/) - Called when a touch ends
+
+**Device Motion & Orientation:**
+- [`rotationX`](https://p5js.org/reference/p5/rotationX/) - Device tilt forward/backward
+- [`rotationY`](https://p5js.org/reference/p5/rotationY/) - Device tilt left/right
+- [`rotationZ`](https://p5js.org/reference/p5/rotationZ/) - Device rotation around screen
+- [`accelerationX`](https://p5js.org/reference/p5/accelerationX/) - Acceleration left/right
+- [`accelerationY`](https://p5js.org/reference/p5/accelerationY/) - Acceleration up/down
+- [`accelerationZ`](https://p5js.org/reference/p5/accelerationZ/) - Acceleration forward/back
+- [`deviceShaken()`](https://p5js.org/reference/p5/deviceShaken/) - Shake detection event
+- [`deviceMoved()`](https://p5js.org/reference/p5/deviceMoved/) - Movement detection event
+- [`setShakeThreshold()`](https://p5js.org/reference/p5/setShakeThreshold/) - Set shake detection sensitivity
+- [`setMoveThreshold()`](https://p5js.org/reference/p5/setMoveThreshold/) - Set movement detection sensitivity
+
+**Audio Input (requires p5.sound):**
+- [`p5.AudioIn()`](https://p5js.org/reference/p5.sound/p5.AudioIn/) - Audio input object
+- [`getLevel()`](https://p5js.org/reference/p5.sound/p5.AudioIn/getLevel/) - Current audio input level
 
 ## Browser Compatibility
 
@@ -44,10 +67,10 @@ This page provides a link to live examples as well as the code on github
 
 ```html
 <!-- Minified version (recommended) -->
-<script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.4/dist/p5.mobile-permissions.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/p5-phone@1.4.4/dist/p5-phone.min.js"></script>
 
 <!-- Development version (larger, with comments) -->
-<!-- <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.4/dist/p5.mobile-permissions.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/p5-phone@1.4.4/dist/p5-phone.js"></script> -->
 ```
 
 ### Basic Setup
@@ -74,8 +97,8 @@ This page provides a link to live examples as well as the code on github
   <!-- Load p5.js library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.10/p5.min.js"></script>
   
-  <!-- Load the mobile p5.js permissions library -->
-  <script src="https://cdn.jsdelivr.net/npm/mobile-p5-permissions@1.4.4/dist/p5.mobile-permissions.min.js"></script>
+  <!-- Load p5-phone library -->
+  <script src="https://cdn.jsdelivr.net/npm/p5-phone@1.4.4/dist/p5-phone.min.js"></script>
   
 </head>
 <body>

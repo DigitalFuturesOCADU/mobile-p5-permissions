@@ -1,8 +1,8 @@
 {
-  "name": "mobile-p5-permissions",
+  "name": "p5-phone",
   "version": "1.4.4",
-  "description": "Easy-to-use permission handling and gesture blocking for mobile p5.js projects",
-  "main": "src/permissionsAll.js",
+  "description": "Simplified mobile hardware access for p5.js - handle sensors, microphone, touch, and browser gestures with ease",
+  "main": "src/p5-phone.js",
   "files": [
     "src/",
     "dist/",
@@ -11,7 +11,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "npx terser src/permissionsAll.js --compress --mangle --output dist/p5.mobile-permissions.min.js && cp src/permissionsAll.js dist/p5.mobile-permissions.js",
+    "build": "npx terser src/p5-phone.js --compress --mangle --output dist/p5-phone.min.js && cp src/p5-phone.js dist/p5-phone.js",
     "test": "echo \"No tests specified\" && exit 0",
     "prepublishOnly": "npm run build",
     "prepare": "npm run build",
@@ -24,7 +24,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DigitalFuturesOCADU/mobile-p5-permissions.git"
+    "url": "git+https://github.com/DigitalFuturesOCADU/p5-phone.git"
   },
   "keywords": [
     "p5js",
@@ -47,9 +47,9 @@
   "author": "Digital Futures OCADU",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/DigitalFuturesOCADU/mobile-p5-permissions/issues"
+    "url": "https://github.com/DigitalFuturesOCADU/p5-phone/issues"
   },
-  "homepage": "https://github.com/DigitalFuturesOCADU/mobile-p5-permissions#readme",
+  "homepage": "https://github.com/DigitalFuturesOCADU/p5-phone#readme",
   "peerDependencies": {
     "p5": "^1.0.0"
   },
