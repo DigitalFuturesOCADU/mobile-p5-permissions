@@ -1,8 +1,6 @@
 # p5-phone
 ![P5Phone.png](P5Phone.png)
 
-**Simplified mobile hardware access for p5.js** - handle sensors, microphone, touch, and browser gestures with ease.
-
 ##  [Link for Interactive Examples](https://digitalfuturesocadu.github.io/P5-Phone-Interactions/examples/homepage)
 
 # Overview
